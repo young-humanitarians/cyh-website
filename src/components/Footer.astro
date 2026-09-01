@@ -1,0 +1,186 @@
+---
+import { href } from '~/lib/urls';
+import SocialLinks from '~/components/SocialLinks.astro';
+import type { SiteSettings } from '~/lib/site';
+
+interface Props {
+  settings: SiteSettings;
+}
+
+const { settings } = Astro.props;
+const { footer, newsletter, ui, siteName } = settings;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <section class="site-footer__newsletter" aria-labelledby="newsletter-heading">
+      <h2 id="newsletter-heading" class="title-md">{newsletter.heading}</h2>
+      {newsletter.description && <p class="site-footer__note">{newsletter.description}</p>}
+
+      <form
+        class="newsletter-form"
+        action={newsletter.actionUrl}
+        method="post"
+        target="_blank"
+      >
+        <label class="newsletter-form__label" for="newsletter-email">
+          {newsletter.emailLabel}
+        </label>
+        <div class="newsletter-form__row">
+          <input
+            class="newsletter-form__input"
+            id="newsletter-email"
+            type="email"
+            name="EMAIL"
+            autocomplete="email"
+            required
+          />
+          <button class="button" type="submit">{newsletter.buttonLabel}</button>
+        </div>
+      </form>
+    </section>
+
+    <div class="site-footer__meta">
+      <address class="site-footer__address">
+        {footer.addressLines.map((line) => <span>{line}</span>)}
+        <a href={`mailto:${footer.email}`}>{footer.email}</a>
+      </address>
+
+      <SocialLinks items={settings.social} label={ui.socialNavigation} />
+
+      {
+        footer.legalLinks.length > 0 && (
+          <nav aria-label={ui.footerNavigation}>
+            <ul class="site-footer__links">
+              {footer.legalLinks.map((item) => (
+                <li>
+                  <a href={href(item.href)}>{item.label}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </div>
+
+    <p class="site-footer__copyright">
+      {footer.copyright}
+      {' '}{year}
+      <span class="visually-hidden">— {siteName}</span>
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-block-start: var(--s-9);
+    padding-block: var(--s-8) var(--s-6);
+    background: var(--c-ink);
+    color: var(--c-paper);
+  }
+
+  .site-footer :global(a) {
+    color: var(--c-paper);
+  }
+
+  .site-footer :global(a:hover) {
+    color: var(--c-paper);
+    text-decoration-color: var(--c-red);
+  }
+
+  .site-footer :global(:focus-visible) {
+    outline-color: var(--c-paper);
+  }
+
+  .site-footer__inner {
+    display: grid;
+    gap: var(--s-7);
+  }
+
+  @media (min-width: 52rem) {
+    .site-footer__inner {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .site-footer__copyright {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .site-footer__note {
+    margin-block-start: var(--s-2);
+    color: hsl(0 0% 100% / 0.72);
+  }
+
+  .newsletter-form {
+    margin-block-start: var(--s-4);
+    max-width: 26rem;
+  }
+
+  .newsletter-form__label {
+    display: block;
+    font-size: var(--t-sm);
+    font-weight: 500;
+    margin-block-end: var(--s-2);
+  }
+
+  .newsletter-form__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+
+  .newsletter-form__input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    padding: 0.7em 1em;
+    font: inherit;
+    color: var(--c-ink);
+    background: var(--c-paper);
+    border: 1.5px solid transparent;
+    border-radius: 999px;
+  }
+
+  .newsletter-form .button {
+    background: var(--c-red);
+    border-color: var(--c-red);
+    color: var(--c-paper);
+  }
+
+  .newsletter-form .button:hover {
+    background: var(--c-paper);
+    border-color: var(--c-paper);
+    color: var(--c-ink);
+  }
+
+  .site-footer__meta {
+    display: grid;
+    gap: var(--s-5);
+    font-size: var(--t-sm);
+  }
+
+  .site-footer__address {
+    display: grid;
+    gap: var(--s-1);
+    font-style: normal;
+    color: hsl(0 0% 100% / 0.82);
+  }
+
+  .site-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .site-footer__copyright {
+    padding-block-start: var(--s-5);
+    border-block-start: 1px solid hsl(0 0% 100% / 0.16);
+    font-size: var(--t-xs);
+    color: hsl(0 0% 100% / 0.64);
+  }
+</style>

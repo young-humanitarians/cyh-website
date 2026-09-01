@@ -1,0 +1,69 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import ActionRow from '~/components/ActionRow.astro';
+
+interface Props {
+  title: string;
+  eyebrow?: string | undefined;
+  heading?: string | undefined;
+  lead?: string | undefined;
+  image?: ImageMetadata | undefined;
+  imageAlt?: string | undefined;
+  actions?: { label: string; href: string }[];
+}
+
+const { title, eyebrow, heading, lead, image, imageAlt, actions = [] } = Astro.props;
+---
+
+<div class:list={['page-header', image && 'page-header--split']}>
+  <div class="wrap page-header__inner">
+    <div class="stack" style="--flow: var(--s-4)">
+      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+      <h1 class="title-xl">{heading ?? title}</h1>
+      {lead && <p class="lead">{lead}</p>}
+      <ActionRow actions={actions} />
+    </div>
+
+    {
+      image && (
+        <figure class="page-header__figure">
+          <Image src={image} alt={imageAlt ?? ''} widths={[420, 720]} sizes="(min-width: 60rem) 22rem, 90vw" loading="eager" />
+        </figure>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .page-header {
+    padding-block: var(--s-8) var(--s-6);
+    border-block-end: 1px solid var(--c-rule);
+    background: var(--c-paper-warm);
+  }
+
+  .page-header__inner {
+    display: grid;
+    gap: var(--s-6);
+  }
+
+  @media (min-width: 60rem) {
+    .page-header--split .page-header__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+      align-items: center;
+    }
+  }
+
+  .page-header__figure {
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+
+  .page-header__figure :global(img) {
+    width: 100%;
+    height: 100%;
+    max-height: 24rem;
+    object-fit: cover;
+  }
+</style>

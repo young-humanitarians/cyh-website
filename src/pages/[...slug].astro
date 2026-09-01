@@ -1,0 +1,208 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import PageSections from '~/components/PageSections.astro';
+import EventCard from '~/components/EventCard.astro';
+import PersonCard from '~/components/PersonCard.astro';
+import NewsCard from '~/components/NewsCard.astro';
+import { getSiteSettings } from '~/lib/site';
+import { href } from '~/lib/urls';
+import { upcomingEvents, eventsByCategory } from '~/lib/events';
+import { mdxComponents } from '~/components/mdx/components';
+
+/**
+ * Every entry in the `pages` collection except the home page, which has its own
+ * route. The `template` field decides which collection, if any, is listed below
+ * the page body.
+ */
+export const getStaticPaths = (async () => {
+  const pages = await getCollection('pages', ({ data }) => data.template !== 'home');
+  return pages.map((page) => ({ params: { slug: page.id }, props: { page } }));
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const { Content } = await render(page);
+const settings = await getSiteSettings();
+const { template, hero, seo } = page.data;
+
+const team =
+  template === 'team'
+    ? (await getCollection('team')).sort(
+        (a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name),
+      )
+    : [];
+
+/** Departments in the order the team entries define them. */
+const departments = [...new Set(team.map((member) => member.data.department))];
+
+const advisors =
+  template === 'advisoryBoard'
+    ? (await getCollection('advisoryBoard')).sort(
+        (a, b) => a.data.order - b.data.order || a.data.name.localeCompare(b.data.name),
+      )
+    : [];
+
+const upcoming = template === 'events' ? await upcomingEvents() : [];
+
+const categoryEvents =
+  template === 'eventCategory' && page.data.eventCategory
+    ? await eventsByCategory(page.data.eventCategory)
+    : [];
+
+const news =
+  template === 'impact'
+    ? (await getCollection('news')).sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+    : [];
+
+const pressItems = news.filter((item) => item.data.section === 'press');
+const podcastItems = news.filter((item) => item.data.section === 'podcast');
+---
+
+<BaseLayout
+  title={seo?.title ?? page.data.title}
+  description={seo?.description ?? page.data.description}
+>
+  <PageHeader
+    title={page.data.title}
+    eyebrow={hero?.eyebrow}
+    heading={hero?.heading}
+    lead={hero?.lead}
+    image={hero?.image}
+    imageAlt={hero?.imageAlt}
+    actions={hero?.actions ?? []}
+  />
+
+  <section class="section">
+    <div class="wrap stack" style="--flow: var(--s-7)">
+      <div class="prose">
+        <Content components={mdxComponents} />
+      </div>
+    </div>
+  </section>
+
+  {
+    template === 'team' &&
+      departments.map((department) => (
+        <section class="section" aria-labelledby={`dept-${department.replace(/\W+/g, '-')}`}>
+          <div class="wrap stack" style="--flow: var(--s-5)">
+            <h2 id={`dept-${department.replace(/\W+/g, '-')}`} class="title-lg">
+              {department}
+            </h2>
+            <div class="grid grid--3">
+              {team
+                .filter((member) => member.data.department === department)
+                .map((member) => (
+                  <PersonCard
+                    name={member.data.name}
+                    role={member.data.role}
+                    credentials={member.data.credentials}
+                    quote={member.data.quote}
+                    photo={member.data.photo}
+                  />
+                ))}
+            </div>
+          </div>
+        </section>
+      ))
+  }
+
+  {
+    template === 'advisoryBoard' && (
+      <section class="section">
+        <div class="wrap">
+          <div class="grid grid--3">
+            {advisors.map((advisor) => (
+              <PersonCard
+                headingLevel="h2"
+                name={advisor.data.name}
+                role={advisor.data.role}
+                quote={advisor.data.quote}
+                photo={advisor.data.photo}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    template === 'events' && (
+      <section class="section" aria-labelledby="upcoming-heading">
+        <div class="wrap stack" style="--flow: var(--s-5)">
+          <h2 id="upcoming-heading" class="title-lg">
+            {settings.ui.upcomingEvents}
+          </h2>
+          {upcoming.length > 0 ? (
+            <div class="grid grid--2">
+              {upcoming.map((event) => (
+                <EventCard event={event} />
+              ))}
+            </div>
+          ) : (
+            <p class="lead">{settings.ui.noUpcomingEvents}</p>
+          )}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    template === 'eventCategory' && (
+      <section class="section">
+        <div class="wrap stack" style="--flow: var(--s-5)">
+          <div class="grid grid--2">
+            {categoryEvents.map((event) => (
+              <EventCard event={event} headingLevel="h2" />
+            ))}
+          </div>
+          <p>
+            <a class="button button--ghost" href={href('/events')}>
+              {settings.ui.backToOverview}
+            </a>
+          </p>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    template === 'impact' && (
+      <>
+        <section class="section" aria-labelledby="press-heading">
+          <div class="wrap stack" style="--flow: var(--s-5)">
+            <h2 id="press-heading" class="title-lg">
+              {page.data.pressHeading}
+            </h2>
+            <div class="grid grid--2">
+              {pressItems.map((item) => (
+                <NewsCard item={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section class="section" aria-labelledby="podcast-heading">
+          <div class="wrap stack" style="--flow: var(--s-5)">
+            <h2 id="podcast-heading" class="title-lg">
+              {page.data.podcastHeading}
+            </h2>
+            <div class="grid grid--2">
+              {podcastItems.map((item) => (
+                <NewsCard item={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+      </>
+    )
+  }
+
+  <section class="section">
+    <div class="wrap stack" style="--flow: var(--s-7)">
+      <PageSections data={page.data} />
+    </div>
+  </section>
+</BaseLayout>

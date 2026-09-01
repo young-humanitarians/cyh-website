@@ -1,0 +1,20 @@
+# Normalise line endings to LF in the repository and on checkout.
+#
+# Content is edited from several places — Keystatic on Linux (Codespaces), and
+# editors on Windows and macOS. Without this, a save on a different OS rewrites
+# every line of a file and the real change disappears in the diff.
+* text=auto eol=lf
+
+# Never touch binaries.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+
+# Generated: keep it out of diffs and review summaries.
+package-lock.json -diff linguist-generated

@@ -1,0 +1,76 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import { href, isExternal } from '~/lib/urls';
+import { mdxComponents } from '~/components/mdx/components';
+
+interface Props {
+  item: CollectionEntry<'news'>;
+}
+
+const { item } = Astro.props;
+const { Content } = await render(item);
+const { title, outlet, dateLabel, links } = item.data;
+---
+
+<article class="news card">
+  {
+    (outlet || dateLabel) && (
+      <p class="card__meta">
+        {outlet && <span>{outlet}</span>}
+        {outlet && dateLabel && <span aria-hidden="true"> · </span>}
+        {dateLabel && <span>{dateLabel}</span>}
+      </p>
+    )
+  }
+
+  <h3 class="title-sm">{title}</h3>
+
+  <div class="card__body prose">
+    <Content components={mdxComponents} />
+  </div>
+
+  {
+    links.length > 0 && (
+      <ul class="news__links">
+        {links.map((link) => {
+          const external = isExternal(link.href);
+          return (
+            <li>
+              <a
+                href={href(link.href)}
+                {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+              >
+                {link.label}
+                <span aria-hidden="true"> →</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    )
+  }
+</article>
+
+<style>
+  .news__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-4);
+    list-style: none;
+    margin-block-start: auto;
+    padding: 0;
+    padding-block-start: var(--s-2);
+    font-family: var(--f-heading);
+    font-size: var(--t-sm);
+    font-weight: 600;
+  }
+
+  .news__links a {
+    color: var(--c-red-dark);
+    text-decoration: none;
+  }
+
+  .news__links a:hover {
+    text-decoration: underline;
+  }
+</style>
