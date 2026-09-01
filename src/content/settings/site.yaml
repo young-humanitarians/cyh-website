@@ -1,0 +1,96 @@
+siteName: Circle of Young Humanitarians
+shortName: CYH
+tagline: >-
+  Building a bridge between the humanitarian world and the next generation.
+logoAlt: Circle of Young Humanitarians
+
+navigation:
+  - label: Home
+    href: /
+    children: []
+  - label: About
+    children:
+      - label: Who we are
+        href: /about-us
+      - label: Theory of Change
+        href: /theory-of-change
+      - label: Team
+        href: /team
+      - label: Advisory Board
+        href: /advisory-board
+  - label: Initiatives
+    children:
+      - label: Events
+        href: /events
+      - label: Podcast
+        href: /podcast
+      - label: Humanitarian Wayfinder
+        href: /humanitarian-wayfinder
+  - label: Summit
+    children:
+      - label: Summit 2026
+        href: /summit-2026
+      - label: Summit 2025
+        href: /summit-2025
+      - label: Summit 2024
+        href: /summit-2024
+      - label: Summit 2023
+        href: /summit-2023
+  - label: Impact
+    href: /impact
+    children: []
+  - label: Get Involved
+    href: /get-involved
+    children: []
+  - label: Support Us
+    href: /support
+    children: []
+
+social:
+  - platform: instagram
+    label: Circle of Young Humanitarians auf Instagram
+    href: https://www.instagram.com/circleofyounghumanitarians/
+  - platform: linkedin
+    label: Circle of Young Humanitarians auf LinkedIn
+    href: https://www.linkedin.com/company/circle-of-young-humanitarians/
+  - platform: spotify
+    label: Young Humanitarian Podcast auf Spotify
+    href: https://open.spotify.com/show/7tmFop3ZEWJn95nYs7gGY2
+
+newsletter:
+  heading: Stay Up to Date with the CYH Newsletter
+  description: ''
+  emailLabel: Email Address
+  buttonLabel: Subscribe
+  actionUrl: http://eepurl.com/iSgX--
+
+footer:
+  addressLines:
+    - Circle of Young Humanitarians
+    - Dietzingerstrasse 12
+    - 8003 Zürich
+  email: info@young-humanitarians.ch
+  legalLinks:
+    - label: Data Protection
+      href: /data-protection
+    - label: Participation Conditions
+      href: /participation-conditions
+  copyright: © Circle of Young Humanitarians
+
+ui:
+  skipToContent: Zum Inhalt springen
+  openMenu: Menü öffnen
+  closeMenu: Menü schliessen
+  mainNavigation: Hauptnavigation
+  footerNavigation: Fussnavigation
+  socialNavigation: Soziale Netzwerke
+  upcomingEvents: Upcoming Events
+  pastEvents: Past Events
+  noUpcomingEvents: Zurzeit sind keine Veranstaltungen ausgeschrieben.
+  backToOverview: Zurück zur Übersicht
+  notFoundTitle: Seite nicht gefunden
+  notFoundText: >-
+    Diese Seite existiert nicht oder wurde verschoben.
+  notFoundAction: Zur Startseite
+  contentLanguageNote: >-
+    Die Inhalte dieser Website sind auf Englisch verfasst.
