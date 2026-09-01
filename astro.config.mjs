@@ -17,9 +17,48 @@ const isDev = process.argv.includes('dev');
 const keystaticIntegrations = isDev
   ? await Promise.all([
       import('@astrojs/react').then((m) => m.default()),
-      import('@keystatic/astro').then((m) => m.default()),
+      import('@keystatic/astro').then((m) => withBaseAwareApiRoute(m.default())),
     ])
   : [];
+
+/** Route pattern Keystatic's integration mounts its API handler on. */
+const KEYSTATIC_API_PATTERN = '/api/keystatic/[...params]';
+
+/**
+ * Keystatic does not know about Astro's `base`: its editor calls
+ * `/api/keystatic/*` as an absolute path and its handler only recognises
+ * request paths starting with `/api/keystatic/`. Served under a base sub-path,
+ * every one of those calls answers 404 and the editor shows no content at all.
+ * So drop that one injected route and mount our own wrapper instead, which
+ * takes the base off the request before Keystatic looks at it.
+ *
+ * @param {import('astro').AstroIntegration} integration
+ * @returns {import('astro').AstroIntegration}
+ */
+function withBaseAwareApiRoute(integration) {
+  const setup = integration.hooks['astro:config:setup'];
+  if (!setup) return integration;
+
+  return {
+    ...integration,
+    hooks: {
+      ...integration.hooks,
+      'astro:config:setup': async (options) => {
+        await setup({
+          ...options,
+          injectRoute: (route) => {
+            if (route.pattern !== KEYSTATIC_API_PATTERN) options.injectRoute(route);
+          },
+        });
+        options.injectRoute({
+          entrypoint: new URL('./src/keystatic/api-route.ts', options.config.root),
+          pattern: KEYSTATIC_API_PATTERN,
+          prerender: false,
+        });
+      },
+    },
+  };
+}
 
 export default defineConfig({
   site: 'https://young-humanitarians.github.io',
