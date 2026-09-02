@@ -1,0 +1,198 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import PageHeader from '~/components/PageHeader.astro';
+import ActionRow from '~/components/ActionRow.astro';
+import { href, isExternal } from '~/lib/urls';
+import { mdxComponents } from '~/components/mdx/components';
+
+/** One page per Young Humanitarian Summit, at /summit-2026 and so on. */
+export const getStaticPaths = (async () => {
+  const summits = await getCollection('summits');
+  return summits.map((summit) => ({
+    params: { year: String(summit.data.year) },
+    props: { summit },
+  }));
+}) satisfies GetStaticPaths;
+
+const { summit } = Astro.props;
+const { Content } = await render(summit);
+const {
+  title,
+  description,
+  speakers,
+  speakersHeading,
+  speakersNote,
+  workshops,
+  workshopsHeading,
+  sections,
+  outro,
+} = summit.data;
+---
+
+<BaseLayout title={title} description={description}>
+  <PageHeader title={title} lead={description} />
+
+  <section class="section">
+    <div class="wrap prose">
+      <Content components={mdxComponents} />
+    </div>
+  </section>
+
+  {
+    speakers.length > 0 && (
+      <section class="section" aria-labelledby="speakers-heading">
+        <div class="wrap stack" style="--flow: var(--s-5)">
+          <h2 id="speakers-heading" class="title-lg">
+            {speakersHeading}
+          </h2>
+          <ul class="speakers">
+            {speakers.map((speaker) => (
+              <li class="speaker">
+                <h3 class="speaker__name title-sm">{speaker.name}</h3>
+                {speaker.role && <p class="speaker__role">{speaker.role}</p>}
+              </li>
+            ))}
+          </ul>
+          {speakersNote && <p class="lead">{speakersNote}</p>}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    workshops.length > 0 && (
+      <section class="section section--sunk" aria-labelledby="workshops-heading">
+        <div class="wrap stack" style="--flow: var(--s-5)">
+          <h2 id="workshops-heading" class="title-lg">
+            {workshopsHeading}
+          </h2>
+          <div class="grid grid--2">
+            {workshops.map((workshop) => (
+              <article class="card">
+                {(workshop.organisation || workshop.format) && (
+                  <p class="card__meta">
+                    {workshop.organisation}
+                    {workshop.organisation && workshop.format && (
+                      <span aria-hidden="true"> · </span>
+                    )}
+                    {workshop.format}
+                  </p>
+                )}
+                <h3 class="title-sm">{workshop.title}</h3>
+                {workshop.description && <p class="card__body">{workshop.description}</p>}
+                {workshop.link && (
+                  <p class="workshop__link">
+                    <a
+                      href={href(workshop.link.href)}
+                      {...(isExternal(workshop.link.href)
+                        ? { target: '_blank', rel: 'noopener' }
+                        : {})}
+                    >
+                      {workshop.link.label}
+                      <span aria-hidden="true"> →</span>
+                    </a>
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    sections.length > 0 && (
+      <section class="section">
+        <div class="wrap stack" style="--flow: var(--s-7)">
+          {sections.map((block) => (
+            <div class="stack" style="--flow: var(--s-3)">
+              <h2 class="title-md">{block.heading}</h2>
+              {block.text && <p class="summit-block__text">{block.text}</p>}
+              {block.items.length > 0 && (
+                <ul class="summit-facts">
+                  {block.items.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    outro && (outro.text || outro.actions.length > 0) && (
+      <section class="section">
+        <div class="wrap stack" style="--flow: var(--s-4)">
+          {outro.text && <p class="lead">{outro.text}</p>}
+          <ActionRow actions={outro.actions} variant="ghost" />
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .speakers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    gap: var(--s-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .speaker {
+    padding-block-start: var(--s-3);
+    border-block-start: 2px solid var(--c-ink);
+  }
+
+  .speaker__role {
+    margin-block-start: var(--s-2);
+    font-size: var(--t-sm);
+    color: var(--c-ink-soft);
+  }
+
+  .workshop__link {
+    margin-block-start: auto;
+    padding-block-start: var(--s-2);
+    font-family: var(--f-heading);
+    font-size: var(--t-sm);
+    font-weight: 600;
+  }
+
+  .workshop__link a {
+    color: var(--c-red-dark);
+    text-decoration: none;
+  }
+
+  .workshop__link a:hover {
+    text-decoration: underline;
+  }
+
+  .summit-block__text {
+    max-width: var(--measure);
+    color: var(--c-ink-soft);
+  }
+
+  .summit-facts {
+    display: grid;
+    gap: var(--s-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: var(--measure);
+  }
+
+  .summit-facts li {
+    padding-block: var(--s-2);
+    border-block-end: 1px solid var(--c-rule);
+    font-family: var(--f-heading);
+    font-weight: 600;
+  }
+</style>

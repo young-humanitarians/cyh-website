@@ -1,0 +1,330 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ActionRow from '~/components/ActionRow.astro';
+import { href, isExternal } from '~/lib/urls';
+
+/**
+ * Renders the structured parts of a page entry — the repeating blocks that
+ * would be tedious to hand-format in the body: stage lists, volunteer teams,
+ * event formats, donation details, report downloads, name lists and initiative
+ * teasers. Each block only appears when the page provides it, and each carries
+ * its own `<h2>` so the page keeps a correct heading outline.
+ */
+interface Props {
+  data: CollectionEntry<'pages'>['data'];
+}
+
+const { data } = Astro.props;
+const {
+  initiatives,
+  initiativesHeading,
+  stages,
+  stagesHeading,
+  teams,
+  teamsHeading,
+  programmes,
+  programmesHeading,
+  donation,
+  reports,
+  reportsHeading,
+  names,
+  namesHeading,
+  outro,
+} = data;
+
+/** Blank-line-separated paragraphs, so a closing section can run to length. */
+const outroParagraphs = (outro?.text ?? '')
+  .split(/\n\s*\n/)
+  .map((p) => p.trim())
+  .filter(Boolean);
+---
+
+{
+  stages.length > 0 && (
+    <section class="block">
+      {stagesHeading && <h2 class="title-lg">{stagesHeading}</h2>}
+      <ol class="stages">
+        {stages.map((stage) => (
+          <li class="stage">
+            <h3 class="title-md">{stage.title}</h3>
+            <dl class="stage__pair">
+              <dt>{stage.challengeLabel}</dt>
+              <dd>{stage.challenge}</dd>
+              <dt>{stage.responseLabel}</dt>
+              <dd>{stage.response}</dd>
+            </dl>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+{
+  teams.length > 0 && (
+    <section class="block">
+      {teamsHeading && <h2 class="title-lg">{teamsHeading}</h2>}
+      <div class="grid grid--2">
+        {teams.map((team) => (
+          <article class="card">
+            {team.department && <p class="card__meta">{team.department}</p>}
+            <h3 class="title-sm">{team.name}</h3>
+            <p class="card__body">{team.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+{
+  programmes.length > 0 && (
+    <section class="block">
+      {programmesHeading && <h2 class="title-lg">{programmesHeading}</h2>}
+      <div class="grid grid--2">
+        {programmes.map((programme) => (
+          <article class="card">
+            <h3 class="title-md">
+              <a class="programme__link" href={href(programme.href)}>
+                {programme.title}
+              </a>
+            </h3>
+            <p class="card__body">{programme.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+{
+  donation && (
+    <section class="block">
+      <h2 class="title-lg">{donation.heading}</h2>
+      <div class="donation card">
+        <p class="card__meta">{donation.methodLabel}</p>
+        <dl class="donation__lines">
+          {donation.lines.map((line) => (
+            <div class="donation__line">
+              {line.label ? <dt>{line.label}</dt> : <dt class="visually-hidden">—</dt>}
+              <dd>{line.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  )
+}
+
+{
+  reports.length > 0 && (
+    <section class="block">
+      {reportsHeading && <h2 class="title-lg">{reportsHeading}</h2>}
+      <ul class="downloads">
+        {reports.map((report) => (
+          <li>
+            <a
+              href={href(report.href)}
+              {...(isExternal(report.href) ? { target: '_blank', rel: 'noopener' } : {})}
+            >
+              {report.label}
+              <span aria-hidden="true"> →</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+{
+  names.length > 0 && (
+    <section class="block">
+      {namesHeading && <h2 class="title-lg">{namesHeading}</h2>}
+      <ul class="names">
+        {names.map((name) => (
+          <li>{name}</li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+{
+  outro && (outro.heading || outroParagraphs.length > 0 || outro.actions.length > 0) && (
+    <section class="block outro">
+      {outro.heading && <h2 class="title-lg">{outro.heading}</h2>}
+      {outroParagraphs.map((paragraph) => (
+        <p class="outro__text">{paragraph}</p>
+      ))}
+      <ActionRow actions={outro.actions} />
+    </section>
+  )
+}
+
+{
+  initiatives.length > 0 && (
+    <section class="block">
+      {initiativesHeading && <h2 class="title-lg">{initiativesHeading}</h2>}
+      <ul class="initiatives">
+        {initiatives.map((item) => (
+          <li>
+            <a class="initiatives__link" href={href(item.href)}>
+              {item.text}
+              <span aria-hidden="true"> →</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<style>
+  .block {
+    display: grid;
+    gap: var(--s-5);
+  }
+
+  .initiatives {
+    display: grid;
+    gap: var(--s-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .initiatives__link {
+    display: block;
+    padding: var(--s-4) var(--s-5);
+    font-family: var(--f-heading);
+    font-weight: 600;
+    text-decoration: none;
+    background: var(--c-paper-warm);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    transition: border-color 120ms ease;
+  }
+
+  .initiatives__link:hover {
+    border-color: var(--c-red);
+    color: var(--c-red-dark);
+  }
+
+  .stages {
+    display: grid;
+    gap: var(--s-5);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .stage {
+    padding: var(--s-5);
+    background: var(--c-paper-warm);
+    border-inline-start: 3px solid var(--c-red);
+    border-radius: var(--radius);
+  }
+
+  .stage__pair {
+    display: grid;
+    gap: var(--s-1);
+    margin: 0;
+    margin-block-start: var(--s-3);
+  }
+
+  .stage__pair dt {
+    font-family: var(--f-heading);
+    font-size: var(--t-xs);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-ink-mute);
+  }
+
+  .stage__pair dd {
+    margin: 0;
+    margin-block-end: var(--s-3);
+    color: var(--c-ink-soft);
+  }
+
+  .stage__pair dd:last-child {
+    margin-block-end: 0;
+  }
+
+  .programme__link {
+    text-decoration: none;
+  }
+
+  .programme__link:hover {
+    text-decoration: underline;
+  }
+
+  .donation {
+    max-width: 30rem;
+  }
+
+  .donation__lines {
+    display: grid;
+    gap: var(--s-2);
+    margin: 0;
+  }
+
+  .donation__line dt {
+    font-size: var(--t-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--c-ink-mute);
+  }
+
+  .donation__line dd {
+    margin: 0;
+  }
+
+  .downloads,
+  .names {
+    display: grid;
+    gap: var(--s-3);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .downloads {
+    font-family: var(--f-heading);
+    font-weight: 600;
+  }
+
+  .downloads a {
+    color: var(--c-red-dark);
+    text-decoration: none;
+  }
+
+  .downloads a:hover {
+    text-decoration: underline;
+  }
+
+  .names {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+    font-family: var(--f-heading);
+    font-weight: 600;
+  }
+
+  .names li {
+    padding-block: var(--s-2);
+    border-block-end: 1px solid var(--c-rule);
+  }
+
+  .outro {
+    padding: var(--s-6);
+    background: var(--c-paper-warm);
+    border-radius: var(--radius);
+  }
+
+  .outro__text {
+    max-width: var(--measure);
+    font-size: var(--t-lg);
+    color: var(--c-ink-soft);
+  }
+</style>

@@ -1,0 +1,20 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { getSiteSettings } from '~/lib/site';
+import { href } from '~/lib/urls';
+
+const settings = await getSiteSettings();
+const { ui } = settings;
+---
+
+<BaseLayout title={ui.notFoundTitle} description={ui.notFoundText} contentLang="de">
+  <section class="section">
+    <div class="wrap stack" style="--flow: var(--s-5)">
+      <h1 class="title-xl">{ui.notFoundTitle}</h1>
+      <p class="lead">{ui.notFoundText}</p>
+      <p>
+        <a class="button" href={href('/')}>{ui.notFoundAction}</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

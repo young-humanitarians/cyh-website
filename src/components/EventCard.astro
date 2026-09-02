@@ -1,0 +1,81 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import ActionRow from '~/components/ActionRow.astro';
+import { mdxComponents } from '~/components/mdx/components';
+
+interface Props {
+  event: CollectionEntry<'events'>;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { event, headingLevel = 'h3' } = Astro.props;
+const { Content } = await render(event);
+const Heading = headingLevel;
+const { title, dateLabel, details, note, registration } = event.data;
+---
+
+<article class="event card">
+  <p class="card__meta">
+    <time datetime={event.data.date.toISOString().slice(0, 10)}>{dateLabel}</time>
+  </p>
+
+  <Heading class="title-md">{title}</Heading>
+
+  <div class="card__body prose">
+    <Content components={mdxComponents} />
+  </div>
+
+  {
+    details.length > 0 && (
+      <dl class="event__details">
+        {details.map((detail) => (
+          <div class="event__detail">
+            <dt>{detail.label}</dt>
+            <dd>{detail.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+
+  {note && <p class="event__note">{note}</p>}
+
+  {registration && <ActionRow actions={[registration]} />}
+</article>
+
+<style>
+  .event__details {
+    display: grid;
+    gap: var(--s-2);
+    margin: 0;
+    padding-block-start: var(--s-2);
+    border-block-start: 1px solid var(--c-rule);
+    font-size: var(--t-sm);
+  }
+
+  .event__detail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+
+  .event__detail dt {
+    min-width: 8rem;
+    font-weight: 600;
+  }
+
+  .event__detail dd {
+    margin: 0;
+    color: var(--c-ink-soft);
+  }
+
+  .event__note {
+    font-size: var(--t-sm);
+    color: var(--c-ink-soft);
+  }
+
+  .event :global(.button-row) {
+    margin-block-start: auto;
+    padding-block-start: var(--s-2);
+  }
+</style>

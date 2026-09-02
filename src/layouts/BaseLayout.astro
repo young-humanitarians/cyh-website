@@ -1,0 +1,64 @@
+---
+import { Font } from 'astro:assets';
+import Header from '~/components/Header.astro';
+import Footer from '~/components/Footer.astro';
+import { getSiteSettings } from '~/lib/site';
+import { href } from '~/lib/urls';
+import '~/styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Set on the element wrapping page content; see the note below. */
+  contentLang?: string;
+}
+
+const { title, description, contentLang = 'en' } = Astro.props;
+
+const settings = await getSiteSettings();
+const path = Astro.url.pathname;
+const pageTitle = title === settings.siteName ? title : `${title} — ${settings.siteName}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+{/*
+  The interface is German (`lang="de"`): navigation labels, form labels and
+  every string the templates produce themselves. The editorial content carried
+  over from the current site is still English, so the content wrapper carries
+  `lang="en"` — without it screen readers would read English prose with German
+  pronunciation rules. Once the pages are translated, set `contentLang="de"`.
+*/}
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={href('/favicon.png')} type="image/png" />
+    <link rel="apple-touch-icon" href={href('/apple-touch-icon.png')} />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={settings.siteName} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <Font cssVariable="--font-body" preload />
+    <Font cssVariable="--font-heading" preload />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">{settings.ui.skipToContent}</a>
+
+    <Header settings={settings} path={path} />
+
+    <main id="main" lang={contentLang}>
+      <slot />
+    </main>
+
+    <Footer settings={settings} />
+  </body>
+</html>

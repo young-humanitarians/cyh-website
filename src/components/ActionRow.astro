@@ -1,0 +1,29 @@
+---
+import { href, isExternal } from '~/lib/urls';
+
+interface Props {
+  actions?: { label: string; href: string }[];
+  variant?: 'solid' | 'ghost';
+}
+
+const { actions = [], variant = 'solid' } = Astro.props;
+---
+
+{
+  actions.length > 0 && (
+    <p class="button-row">
+      {actions.map((action) => {
+        const external = isExternal(action.href);
+        return (
+          <a
+            class:list={['button', variant === 'ghost' && 'button--ghost']}
+            href={href(action.href)}
+            {...(external ? { target: '_blank', rel: 'noopener' } : {})}
+          >
+            {action.label}
+          </a>
+        );
+      })}
+    </p>
+  )
+}

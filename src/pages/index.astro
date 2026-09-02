@@ -1,0 +1,120 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry, render } from 'astro:content';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import ActionRow from '~/components/ActionRow.astro';
+import PageSections from '~/components/PageSections.astro';
+import EventCard from '~/components/EventCard.astro';
+import SocialLinks from '~/components/SocialLinks.astro';
+import { getSiteSettings } from '~/lib/site';
+import { upcomingEvents } from '~/lib/events';
+import { mdxComponents } from '~/components/mdx/components';
+
+const page = await getEntry('pages', 'home');
+if (!page) throw new Error('Missing src/content/pages/home.mdx');
+
+const { Content } = await render(page);
+const settings = await getSiteSettings();
+const upcoming = await upcomingEvents();
+const { hero } = page.data;
+---
+
+<BaseLayout title={settings.siteName} description={page.data.description}>
+  <section class="hero">
+    <div class="wrap hero__inner">
+      <div class="stack" style="--flow: var(--s-5)">
+        {hero?.eyebrow && <p class="eyebrow">{hero.eyebrow}</p>}
+        <h1 class="hero__heading">{hero?.heading ?? page.data.title}</h1>
+        {hero?.lead && <p class="hero__lead">{hero.lead}</p>}
+        <ActionRow actions={hero?.actions ?? []} />
+      </div>
+
+      {
+        hero?.image && (
+          <figure class="hero__figure">
+            <Image
+              src={hero.image}
+              alt={hero.imageAlt ?? ''}
+              widths={[480, 840]}
+              sizes="(min-width: 64rem) 26rem, 90vw"
+              loading="eager"
+            />
+          </figure>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="upcoming-heading">
+    <div class="wrap stack" style="--flow: var(--s-5)">
+      <h2 id="upcoming-heading" class="title-lg">{settings.ui.upcomingEvents}</h2>
+      {
+        upcoming.length > 0 ? (
+          <div class="grid grid--2">
+            {upcoming.map((event) => (
+              <EventCard event={event} />
+            ))}
+          </div>
+        ) : (
+          <p class="lead">{settings.ui.noUpcomingEvents}</p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section section--sunk">
+    <div class="wrap stack prose" style="--flow: var(--s-5)">
+      <Content components={mdxComponents} />
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap stack" style="--flow: var(--s-5)">
+      <PageSections data={page.data} />
+      <SocialLinks items={settings.social} label={settings.ui.socialNavigation} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: var(--s-9);
+    border-block-end: 1px solid var(--c-rule);
+  }
+
+  .hero__inner {
+    display: grid;
+    gap: var(--s-7);
+  }
+
+  @media (min-width: 64rem) {
+    .hero__inner {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+      align-items: center;
+    }
+  }
+
+  .hero__figure {
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+
+  .hero__figure :global(img) {
+    width: 100%;
+    height: 100%;
+    max-height: 30rem;
+    object-fit: cover;
+  }
+
+  .hero__heading {
+    font-size: var(--t-3xl);
+    max-width: 22ch;
+  }
+
+  .hero__lead {
+    font-size: var(--t-lg);
+    color: var(--c-ink-soft);
+    max-width: var(--measure);
+  }
+</style>

@@ -1,0 +1,102 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  name: string;
+  role: string;
+  credentials?: string | undefined;
+  quote?: string | undefined;
+  photo?: ImageMetadata | undefined;
+  /** h3 under a department heading, h2 when the list has none. */
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { name, role, credentials, quote, photo, headingLevel = 'h3' } = Astro.props;
+const Heading = headingLevel;
+---
+
+<article class="person">
+  <div class="person__portrait">
+    {
+      photo ? (
+        <Image src={photo} alt="" width={320} height={320} loading="lazy" />
+      ) : (
+        /* No portraits were available for the initial import; the monogram
+           keeps the grid even until editors upload photos in Keystatic. */
+        <span class="person__monogram" aria-hidden="true">
+          {name.slice(0, 1)}
+        </span>
+      )
+    }
+  </div>
+
+  <div class="person__text">
+    <Heading class="person__name title-sm">{name}</Heading>
+    <p class="person__role">{role}</p>
+    {credentials && <p class="person__credentials">{credentials}</p>}
+    {
+      quote && (
+        <blockquote class="person__quote">
+          <p>{quote}</p>
+        </blockquote>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .person {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    height: 100%;
+  }
+
+  .person__portrait {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--c-paper-sunk);
+    border-radius: var(--radius);
+  }
+
+  .person__portrait :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .person__monogram {
+    font-family: var(--f-heading);
+    font-size: var(--t-2xl);
+    font-weight: 600;
+    color: var(--c-ink-mute);
+  }
+
+  .person__text > * + * {
+    margin-block-start: var(--s-2);
+  }
+
+  .person__role {
+    font-family: var(--f-heading);
+    font-size: var(--t-xs);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c-red);
+  }
+
+  .person__credentials {
+    font-size: var(--t-sm);
+    color: var(--c-ink-soft);
+  }
+
+  .person__quote {
+    padding-inline-start: var(--s-3);
+    border-inline-start: 2px solid var(--c-rule);
+    font-size: var(--t-sm);
+    color: var(--c-ink-soft);
+  }
+</style>

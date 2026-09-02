@@ -1,0 +1,26 @@
+---
+import { href as withBase, isExternal } from '~/lib/urls';
+
+/**
+ * Replaces `<a>` inside rendered MDX bodies.
+ *
+ * Astro rewrites the hrefs its own templates emit, but not the ones authors
+ * type into a content entry. An editor writes `/events` in Keystatic, and on
+ * GitHub Pages the site lives under `/cyh-website/` — so without this, every
+ * link written in a body would 404. External links additionally open in a new
+ * tab, matching the behaviour of links rendered from structured fields.
+ */
+type Props = { href?: string | undefined } & Record<string, unknown>;
+
+const { href, ...rest } = Astro.props as Props;
+const target = href ?? '#';
+const external = isExternal(target) && !target.startsWith('#');
+---
+
+<a
+  href={withBase(target)}
+  {...rest}
+  {...external ? { target: '_blank', rel: 'noopener' } : {}}
+>
+  <slot />
+</a>

@@ -1,0 +1,57 @@
+{
+  "name": "CYH website",
+
+  // Node 24 matches the CI workflow's `lts/*`. Astro 7 requires >= 22.12, so
+  // don't drop below that.
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bookworm",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    // Installs the Claude Code CLI and, in VS Code / Codespaces, the extension.
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+
+  // The named volume below is created empty and root-owned, so hand it to the
+  // `node` user before anything tries to write a login token into it.
+  "postCreateCommand": "sudo mkdir -p /home/node/.claude && sudo chown -R node:node /home/node/.claude && npm ci",
+
+  // Keeps the Claude Code sign-in, settings and session history across container
+  // rebuilds. `~/.claude.json` lives outside `~/.claude`, so CLAUDE_CONFIG_DIR
+  // has to point at the volume as well or the sign-in is lost anyway.
+  "mounts": [
+    "source=cyh-claude-config-${devcontainerId},target=/home/node/.claude,type=volume"
+  ],
+
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/node/.claude"
+  },
+
+  "forwardPorts": [4321],
+  "portsAttributes": {
+    "4321": {
+      // The site is served under a base path, so the forwarded root 404s.
+      // Open <forwarded-url>/cyh-website/ instead.
+      "label": "Astro dev server - open /cyh-website/",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "astro-build.astro-vscode",
+        "unifiedjs.vscode-mdx",
+        "redhat.vscode-yaml"
+      ],
+      "settings": {
+        "files.eol": "\n",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  // Claude Code refuses `--dangerously-skip-permissions` as root, and the
+  // Claude config volume above is owned by this user.
+  "remoteUser": "node"
+}
