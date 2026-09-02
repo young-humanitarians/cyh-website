@@ -8,10 +8,10 @@ import keystaticConfig from '../../keystatic.config';
  *
  * The editor UI calls `/api/keystatic/tree` and `/api/keystatic/blob/…` as
  * absolute paths, and Keystatic's handler matches the request against
- * `^/api/keystatic/`. The dev server serves this site under `base`, so the
- * handler sees `/cyh-website/api/keystatic/tree`, matches nothing and answers
- * 404 — which leaves the editor rendering its shell with no collections and no
- * entries in it. Stripping the base restores the path Keystatic expects.
+ * `^/api/keystatic/`. Called under `base` the handler would see
+ * `/cyh-website/api/keystatic/tree`, match nothing and answer 404 — leaving the
+ * editor with no collections and no entries in it. Stripping the base restores
+ * the path Keystatic expects, whichever of the two the request came in on.
  *
  * Only ever mounted by `astro dev` (see astro.config.mjs); local mode has
  * nothing to do in a static build.
