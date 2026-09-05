@@ -2,8 +2,14 @@
 import { defineConfig, fontProviders } from 'astro/config';
 import mdx from '@astrojs/mdx';
 
-/** Deployment sub-path on GitHub Pages. Every internal URL is built from this. */
-const BASE = '/cyh-website';
+/**
+ * Where the site is deployed. Every internal URL is built from these. The
+ * defaults are the GitHub Pages production deployment, which serves the site
+ * under a sub-path; the Azure Static Web Apps preview overrides both in its
+ * workflow because it serves from the domain root.
+ */
+const BASE = process.env.ASTRO_BASE ?? '/cyh-website';
+const SITE = process.env.ASTRO_SITE ?? 'https://young-humanitarians.github.io';
 
 /**
  * Keystatic runs in local mode: it reads and writes the Markdown/YAML files in
@@ -49,9 +55,7 @@ const keystaticRootRewrite = {
   name: 'keystatic-root-rewrite',
   enforce: 'pre',
   configureServer(server) {
-    console.error('KSMW configureServer called');
     server.middlewares.use((req, _res, next) => {
-      console.error('KSMW saw', req.url);
       if (req.url && KEYSTATIC_ROOT_REQUEST.test(req.url)) req.url = BASE + req.url;
       next();
     });
@@ -97,7 +101,7 @@ function withBaseAwareRoutes(integration) {
 }
 
 export default defineConfig({
-  site: 'https://young-humanitarians.github.io',
+  site: SITE,
   base: BASE,
   output: 'static',
   // 'ignore' so both /about-us and /about-us/ resolve. Links are still written
