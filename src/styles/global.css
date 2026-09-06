@@ -1,21 +1,22 @@
 /*
  * Design tokens.
  *
- * The palette is taken from the current site: a single strong red on
- * near-black and off-white, matching the CYH seal. The red is used sparingly —
- * for accents, links and one button style — so it keeps its weight.
+ * A dark palette: a single strong red on black, matching the CYH seal. The
+ * red is used sparingly — for accents, links and one button style — so it
+ * keeps its weight. `--c-ink` is the foreground and `--c-paper` the page
+ * surface, so the names stay meaningful even though the page is dark.
  */
 :root {
   /* Brand */
-  --c-red: hsl(357 100% 46%);
-  --c-red-dark: hsl(0 100% 35%);
-  --c-ink: hsl(0 0% 8%);
-  --c-ink-soft: hsl(0 0% 27%);
-  --c-ink-mute: hsl(0 0% 42%);
-  --c-paper: hsl(0 0% 100%);
-  --c-paper-warm: hsl(20 12% 97%);
-  --c-paper-sunk: hsl(20 8% 94%);
-  --c-rule: hsl(20 8% 88%);
+  --c-red: hsl(357 100% 61%);
+  --c-red-dark: hsl(357 100% 73%);
+  --c-ink: hsl(0 0% 96%);
+  --c-ink-soft: hsl(0 0% 78%);
+  --c-ink-mute: hsl(0 0% 62%);
+  --c-paper: hsl(0 0% 0%);
+  --c-paper-warm: hsl(20 6% 9%);
+  --c-paper-sunk: hsl(20 5% 14%);
+  --c-rule: hsl(20 5% 26%);
 
   /* Type */
   --f-heading: var(--font-heading), system-ui, sans-serif;
@@ -56,6 +57,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  color-scheme: dark;
 }
 
 body {
