@@ -1,0 +1,91 @@
+{
+  // Run and Debug (F5). Every configuration runs Astro's CLI in this process
+  // under the Node debugger, so breakpoints work anywhere Astro executes code
+  // on the server: astro.config.mjs, src/content.config.ts, src/lib/*.ts, the
+  // Keystatic route files, and the frontmatter of .astro components.
+  //
+  // Browser-side <script> code is not covered - the dev container has no
+  // browser to attach to. Use the browser's own devtools on the forwarded port
+  // for that.
+  //
+  // The servers below listen on port 4322, because the dev server started
+  // automatically on folder open (see tasks.json) already holds 4321;
+  // --ignore-lock lets a second dev server start next to it instead of
+  // refusing. Both ports are forwarded by .devcontainer/devcontainer.json.
+  //
+  // --open hands the URL to VS Code (through the BROWSER helper it sets in
+  // every terminal), which opens it on your machine on the forwarded address.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Astro: dev server",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/astro/bin/astro.mjs",
+      "args": ["dev", "--port", "4322", "--ignore-lock", "--open"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      // Astro serves compiled modules from memory rather than from disk, so the
+      // source maps that matter do not live below an outFiles directory.
+      "resolveSourceMapLocations": ["${workspaceFolder}/**"]
+    },
+    {
+      // Same server, but opens the Keystatic editor instead of the site. Use
+      // this to debug the editor's own routes (src/keystatic/) or a content
+      // collection schema while editing an entry. For everyday content editing
+      // the "Open Keystatic" task is quicker - it needs no debugger.
+      //
+      // The editor is mounted at the root, without the deployment base path;
+      // see src/keystatic/page.astro for why.
+      "name": "Keystatic: editor + dev server",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/astro/bin/astro.mjs",
+      "args": ["dev", "--port", "4322", "--ignore-lock", "--open", "/keystatic"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "resolveSourceMapLocations": ["${workspaceFolder}/**"]
+    },
+    {
+      // The production build: fully static, no Keystatic. Use this to step
+      // through content collection schemas, page generation and build errors.
+      "name": "Astro: build",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/astro/bin/astro.mjs",
+      "args": ["build"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "resolveSourceMapLocations": ["${workspaceFolder}/**"]
+    },
+    {
+      // Serves ./dist as produced by "Astro: build" - the closest thing to what
+      // GitHub Pages ships. Little to break into, but useful to check the built
+      // site before opening a pull request.
+      "name": "Astro: preview build output",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/astro/bin/astro.mjs",
+      "args": ["preview", "--port", "4322", "--open"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "resolveSourceMapLocations": ["${workspaceFolder}/**"]
+    },
+    {
+      // For a server that was started by hand with an inspector attached:
+      //   node --inspect ./node_modules/astro/bin/astro.mjs dev --ignore-lock
+      "name": "Astro: attach to running server",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"],
+      "resolveSourceMapLocations": ["${workspaceFolder}/**"]
+    }
+  ]
+}

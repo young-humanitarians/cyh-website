@@ -26,12 +26,19 @@
     "CLAUDE_CONFIG_DIR": "/home/node/.claude"
   },
 
-  "forwardPorts": [4321],
+  "forwardPorts": [4321, 4322],
   "portsAttributes": {
     "4321": {
       // The site is served under a base path, so the forwarded root 404s.
-      // Open <forwarded-url>/cyh-website/ instead.
-      "label": "Astro dev server - open /cyh-website/",
+      // Open <forwarded-url>/cyh-website/ instead, or /keystatic for the
+      // content editor (the "Open Keystatic" task does that in one step).
+      "label": "Astro dev server - open /cyh-website/ or /keystatic",
+      "onAutoForward": "notify"
+    },
+    "4322": {
+      // Used by the "Astro: dev server" launch configuration in
+      // .vscode/launch.json, so it can run next to the auto-started one.
+      "label": "Astro debug server - open /cyh-website/",
       "onAutoForward": "notify"
     }
   },
@@ -46,7 +53,10 @@
       ],
       "settings": {
         "files.eol": "\n",
-        "terminal.integrated.defaultProfile.linux": "bash"
+        "terminal.integrated.defaultProfile.linux": "bash",
+        // Lets the `folderOpen` tasks in .vscode/tasks.json start without a
+        // prompt: a plain shell plus the Astro dev server.
+        "task.allowAutomaticTasks": "on"
       }
     }
   },

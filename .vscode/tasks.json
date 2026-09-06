@@ -1,0 +1,66 @@
+{
+  // Both tasks start automatically when the folder (or Codespace) is opened, so
+  // the editor comes up with two terminals: a plain shell and the dev server.
+  // Requires "task.allowAutomaticTasks": "on" (set in .devcontainer/devcontainer.json).
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Shell",
+      "type": "process",
+      "command": "bash",
+      "args": ["-l"],
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "startup",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": true,
+        "showReuseMessage": false
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    },
+    {
+      "label": "Astro dev server",
+      "detail": "npm run dev - site is served under the base path, open /cyh-website/",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": {
+        "group": "startup",
+        "panel": "dedicated",
+        "reveal": "always",
+        "focus": false,
+        "showReuseMessage": false
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    },
+    {
+      // The quickest way into the content editor: Ctrl+Shift+P -> "Tasks: Run
+      // Task" -> "Open Keystatic". Nothing has to be running first - `astro dev
+      // --background` reuses the dev server started above if it is up, and
+      // otherwise starts one detached (stop that one with `npx astro dev stop`).
+      // `code --openExternal` hands the URL to VS Code, which opens it on your
+      // machine on the forwarded address rather than inside the container.
+      //
+      // The editor lives at the root, without the deployment base path; see
+      // src/keystatic/page.astro for why.
+      "label": "Open Keystatic",
+      "detail": "Open the content editor in the browser, starting the dev server if needed",
+      "type": "shell",
+      "command": "npx astro dev --background --port 4321 && code --openExternal http://localhost:4321/keystatic",
+      "problemMatcher": [],
+      "presentation": {
+        "panel": "shared",
+        "reveal": "silent",
+        "clear": true,
+        "close": true
+      }
+    }
+  ]
+}
