@@ -1,0 +1,84 @@
+---
+import Section from '~/components/Section.astro';
+import ActionRow from '~/components/ActionRow.astro';
+import { inline } from '~/lib/inline';
+import type { Block } from '~/lib/blocks';
+
+interface Props {
+  block: Block<'text'>;
+}
+
+const { block } = Astro.props;
+const { variant, body, items, actions, ...section } = block;
+---
+
+<Section {...section} narrow={variant !== 'columns'}>
+  <div class:list={['text', `text--${variant}`]}>
+    {body.map((paragraph) => <p set:html={inline(paragraph)} />)}
+    {
+      items.length > 0 && (
+        <ul class="text__list">
+          {items.map((item) => (
+            <li set:html={inline(item)} />
+          ))}
+        </ul>
+      )
+    }
+    <ActionRow actions={actions} />
+  </div>
+</Section>
+
+<style>
+  .text > * + * {
+    margin-block-start: var(--s-5);
+  }
+
+  .text p {
+    max-width: var(--measure);
+  }
+
+  /* A single sentence carrying its own weight — the draft's bold one-liners. */
+  .text--statement p {
+    font-family: var(--f-heading);
+    font-size: var(--t-h3);
+    font-weight: 500;
+    line-height: var(--lh-heading);
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+
+  .text--lead p {
+    font-size: var(--t-lg);
+  }
+
+  /* Two columns of running copy on wide screens, one on narrow. */
+  @media (min-width: 60rem) {
+    .text--columns {
+      columns: 2;
+      column-gap: var(--s-9);
+    }
+
+    .text--columns > * + * {
+      margin-block-start: var(--s-5);
+    }
+
+    .text--columns p {
+      max-width: none;
+      break-inside: avoid;
+    }
+  }
+
+  .text__list {
+    padding-inline-start: 1.35em;
+    max-width: var(--measure);
+  }
+
+  .text__list li + li {
+    margin-block-start: var(--s-3);
+  }
+
+  .text :global(a) {
+    color: var(--c-link);
+    text-decoration: underline;
+  }
+</style>

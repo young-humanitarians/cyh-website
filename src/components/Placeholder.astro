@@ -1,0 +1,47 @@
+---
+import { inline } from '~/lib/inline';
+
+/**
+ * Stands in for content that has not been supplied yet.
+ *
+ * Deliberately conspicuous: a section that is merely empty reads as a layout
+ * bug, and one that is quietly hidden gets forgotten. This says what is
+ * missing and who fills it.
+ */
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+---
+
+<p class="placeholder">
+  <span class="placeholder__tag">To add</span>
+  <span set:html={inline(text)} />
+</p>
+
+<style>
+  .placeholder {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-3);
+    max-width: var(--measure);
+    padding: var(--s-4) var(--s-5);
+    border: 1px dashed var(--c-accent);
+    border-radius: var(--radius);
+    font-size: var(--t-sm);
+  }
+
+  .placeholder__tag {
+    flex: none;
+    padding: 0 var(--s-2);
+    background: var(--c-red);
+    color: var(--c-white);
+    border-radius: var(--radius);
+  }
+
+  .placeholder :global(a) {
+    color: var(--c-link);
+  }
+</style>

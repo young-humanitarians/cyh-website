@@ -1,22 +1,34 @@
 ---
 import { href, isExternal } from '~/lib/urls';
+import type { Action } from '~/lib/blocks';
 
+/**
+ * A row of calls to action. `tier` maps to the three button tiers defined in
+ * docs/design-rules.md §6; content decides the tier, never the template.
+ */
 interface Props {
-  actions?: { label: string; href: string }[];
-  variant?: 'solid' | 'ghost';
+  actions?: readonly Action[] | readonly { label: string; href: string }[];
+  align?: 'start' | 'center';
 }
 
-const { actions = [], variant = 'solid' } = Astro.props;
+const { actions = [], align = 'start' } = Astro.props;
+
+const TIER_CLASS = {
+  primary: '',
+  secondary: 'button--secondary',
+  tertiary: 'button--tertiary',
+} as const;
 ---
 
 {
   actions.length > 0 && (
-    <p class="button-row">
+    <p class:list={['button-row', align === 'center' && 'button-row--center']}>
       {actions.map((action) => {
+        const tier = ('tier' in action ? action.tier : 'primary') as keyof typeof TIER_CLASS;
         const external = isExternal(action.href);
         return (
           <a
-            class:list={['button', variant === 'ghost' && 'button--ghost']}
+            class:list={['button', TIER_CLASS[tier]]}
             href={href(action.href)}
             {...(external ? { target: '_blank', rel: 'noopener' } : {})}
           >
@@ -27,3 +39,9 @@ const { actions = [], variant = 'solid' } = Astro.props;
     </p>
   )
 }
+
+<style>
+  .button-row--center {
+    justify-content: center;
+  }
+</style>

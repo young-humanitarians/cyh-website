@@ -1,0 +1,384 @@
+---
+import { getCollection } from 'astro:content';
+import Section from '~/components/Section.astro';
+import Placeholder from '~/components/Placeholder.astro';
+import ActionRow from '~/components/ActionRow.astro';
+import EventCard from '~/components/EventCard.astro';
+import NewsCard from '~/components/NewsCard.astro';
+import PersonCard from '~/components/PersonCard.astro';
+import ImpactStoryCard from '~/components/ImpactStoryCard.astro';
+import { inline } from '~/lib/inline';
+import { href as withBase, isExternal } from '~/lib/urls';
+import { getSiteSettings } from '~/lib/site';
+import { upcomingEvents } from '~/lib/events';
+import {
+  getAdvisoryBoard,
+  getImpactStories,
+  getInitiatives,
+  getNews,
+  getReports,
+  getSummits,
+  getTeam,
+} from '~/lib/blocks';
+import type { Block } from '~/lib/blocks';
+
+/**
+ * Renders a list from another collection, so a page can say "the upcoming
+ * events go here" without the template knowing which page it is.
+ */
+interface Props {
+  block: Block<'collection'>;
+}
+
+const { block } = Astro.props;
+const { source, category, limit, actions, placeholder, ...section } = block;
+
+const settings = await getSiteSettings();
+const cap = <T,>(items: T[]): T[] => (limit > 0 ? items.slice(0, limit) : items);
+
+const upcoming = source === 'events-upcoming' ? cap(await upcomingEvents()) : [];
+
+const pastEvents =
+  source === 'events-past' || source === 'events-category'
+    ? cap(
+        (
+          await getCollection('events', ({ data }) =>
+            source === 'events-category'
+              ? data.category === category
+              : data.category !== 'upcoming',
+          )
+        ).sort((a, b) => b.data.date.getTime() - a.data.date.getTime()),
+      )
+    : [];
+
+const team = source === 'team' ? await getTeam() : [];
+const departments = [...new Set(team.map((member) => member.data.department))];
+
+const advisors = source === 'advisory-board' ? cap(await getAdvisoryBoard()) : [];
+const press = source === 'press' ? cap(await getNews('press')) : [];
+const podcast = source === 'podcast' ? cap(await getNews('podcast')) : [];
+const summits = source === 'summits' ? cap(await getSummits()) : [];
+const stories = source === 'impact-stories' ? cap(await getImpactStories()) : [];
+const reports = source === 'reports' ? cap(await getReports()) : [];
+const initiatives = source === 'initiatives' ? cap(await getInitiatives()) : [];
+
+/**
+ * Upcoming events have their own "nothing scheduled" copy in the UI strings,
+ * so they are excluded here — an empty upcoming list is a normal state, not a
+ * missing-content state.
+ */
+const rendered =
+  pastEvents.length +
+  team.length +
+  advisors.length +
+  press.length +
+  podcast.length +
+  summits.length +
+  stories.length +
+  reports.length +
+  initiatives.length;
+
+const showPlaceholder = source !== 'events-upcoming' && rendered === 0 && Boolean(placeholder);
+---
+
+<Section {...section}>
+  {showPlaceholder && placeholder && <Placeholder text={placeholder} />}
+
+  {
+    source === 'events-upcoming' &&
+      (upcoming.length > 0 ? (
+        <div class="grid grid--2">
+          {upcoming.map((event) => (
+            <EventCard event={event} />
+          ))}
+        </div>
+      ) : (
+        <p class="lead">{settings.ui.noUpcomingEvents}</p>
+      ))
+  }
+
+  {
+    (source === 'events-past' || source === 'events-category') && (
+      <div class="grid grid--2">
+        {pastEvents.map((event) => (
+          <EventCard event={event} />
+        ))}
+      </div>
+    )
+  }
+
+  {
+    source === 'team' && (
+      <div class="stack" style="--flow: var(--s-8)">
+        {departments.map((department) => (
+          <div class="stack" style="--flow: var(--s-5)">
+            <h3 class="title-md">{department}</h3>
+            <div class="grid grid--3">
+              {team
+                .filter((member) => member.data.department === department)
+                .map((member) => (
+                  <PersonCard
+                    name={member.data.name}
+                    role={member.data.role}
+                    credentials={member.data.credentials}
+                    note={member.data.note}
+                    quote={member.data.quote}
+                    photo={member.data.photo}
+                  />
+                ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  {
+    source === 'advisory-board' && (
+      <div class="grid grid--3">
+        {advisors.map((advisor) => (
+          <PersonCard
+            name={advisor.data.name}
+            role={advisor.data.role}
+            note={advisor.data.note}
+            quote={advisor.data.quote}
+            photo={advisor.data.photo}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  {
+    (source === 'press' || source === 'podcast') && (
+      <div class="grid grid--2">
+        {(source === 'press' ? press : podcast).map((item) => (
+          <NewsCard item={item} />
+        ))}
+      </div>
+    )
+  }
+
+  {
+    source === 'impact-stories' && (
+      <div class="grid grid--2">
+        {stories.map((story) => (
+          <ImpactStoryCard story={story} />
+        ))}
+      </div>
+    )
+  }
+
+  {
+    source === 'summits' && (
+      <ul class="list">
+        {summits.map((summit) => (
+          <li class="list__item">
+            <h3 class="title-sm">
+              <a href={withBase(`/summit-${summit.data.year}`)}>{summit.data.title}</a>
+            </h3>
+            <p set:html={inline(summit.data.teaser ?? summit.data.description)} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    source === 'reports' && (
+      <ul class="list">
+        {reports.map((report) => (
+          <li class="list__item">
+            <h3 class="title-sm">{report.data.title}</h3>
+            {report.data.summary && <p>{report.data.summary}</p>}
+            <p class="list__links">
+              {report.data.file && (
+                <a href={withBase(report.data.file)}>
+                  PDF<span aria-hidden="true"> ↓</span>
+                </a>
+              )}
+              {report.data.webHref && (
+                <a
+                  href={withBase(report.data.webHref)}
+                  {...(isExternal(report.data.webHref)
+                    ? { target: '_blank', rel: 'noopener' }
+                    : {})}
+                >
+                  {settings.ui.readMore}
+                  <span aria-hidden="true"> →</span>
+                </a>
+              )}
+            </p>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {
+    source === 'initiatives' && (
+      <ul class="cards-flip">
+        {initiatives.map((initiative) => (
+          <li class="cards-flip__item">
+            <a class="flip" href={withBase(initiative.data.href)}>
+              <span class="flip__inner">
+                <span class="flip__face flip__face--front">
+                  <span class="flip__title title-sm">{initiative.data.title}</span>
+                  <span class="flip__tagline">{initiative.data.tagline}</span>
+                </span>
+                <span class="flip__face flip__face--back">
+                  <span set:html={inline(initiative.data.summary)} />
+                  <span class="flip__more">
+                    {settings.ui.readMore}
+                    <span aria-hidden="true"> →</span>
+                  </span>
+                </span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  <ActionRow actions={actions} />
+</Section>
+
+<style>
+  .list {
+    display: grid;
+    gap: var(--s-6);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: var(--measure);
+  }
+
+  .list__item {
+    padding-block-end: var(--s-5);
+    border-block-end: 1px solid var(--c-rule);
+  }
+
+  .list__item > * + * {
+    margin-block-start: var(--s-3);
+  }
+
+  .list__item h3 a {
+    text-decoration: none;
+  }
+
+  .list__item h3 a:hover {
+    text-decoration: underline;
+  }
+
+  .list__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    font-size: var(--t-sm);
+  }
+
+  .list__links a {
+    color: var(--c-link);
+  }
+
+  :global(.grid) + :global(.button-row),
+  .list + :global(.button-row),
+  .cards-flip + :global(.button-row) {
+    margin-block-start: var(--s-7);
+  }
+
+  /* -- initiative flashcards -- */
+
+  .cards-flip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: var(--s-6);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cards-flip__item {
+    min-height: 15rem;
+  }
+
+  .flip {
+    display: block;
+    height: 100%;
+    perspective: 1200px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .flip__inner {
+    position: relative;
+    display: block;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 350ms ease;
+  }
+
+  .flip:hover .flip__inner,
+  .flip:focus-visible .flip__inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip__face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    backface-visibility: hidden;
+  }
+
+  .flip__title {
+    font-family: var(--f-heading);
+    font-weight: 500;
+    line-height: var(--lh-heading);
+  }
+
+  .flip__tagline {
+    font-size: var(--t-sm);
+  }
+
+  .flip__face--back {
+    transform: rotateY(180deg);
+    background: var(--c-red);
+    color: var(--c-white);
+    border-color: var(--c-red);
+    font-size: var(--t-sm);
+  }
+
+  .flip__more {
+    font-weight: 400;
+  }
+
+  /* Reduced motion: swap the faces rather than rotate them. */
+  @media (prefers-reduced-motion: reduce) {
+    .flip:hover .flip__inner,
+    .flip:focus-visible .flip__inner {
+      transform: none;
+    }
+
+    .flip:hover .flip__face--front,
+    .flip:focus-visible .flip__face--front {
+      visibility: hidden;
+    }
+
+    .flip__face--back {
+      transform: none;
+      visibility: hidden;
+    }
+
+    .flip:hover .flip__face--back,
+    .flip:focus-visible .flip__face--back {
+      visibility: visible;
+    }
+  }
+</style>

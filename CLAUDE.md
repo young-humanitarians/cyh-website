@@ -18,6 +18,27 @@ through Keystatic.
   collection schemas. When adding a collection or field, update both.
 - The site must build fully static (`output: 'static'`). No server-side
   rendering, no runtime backend assumptions.
+- **Pages are composed from `sections`**, an ordered list of blocks, rather
+  than from per-page templates. Blocks are stored as `{ discriminant, value }`
+  because that is the shape Keystatic's conditional field reads and writes;
+  `flattenSections()` in `src/lib/blocks.ts` converts them to `{ type, ... }`
+  for components. Adding a block type means changing four things: the schema
+  in `src/content.config.ts`, a component in `src/components/blocks/`, a case
+  in `src/components/Blocks.astro`, and a field in `keystatic.config.ts`.
+
+## Design rules
+
+- **`docs/design-rules.md` is the binding design specification.** Read it
+  before writing or changing any CSS, component styling or page layout. It is
+  derived from the live site at https://circleofyounghumanitarians.ch/, which
+  is the source of truth for the visual design.
+- The palette is exactly four colours: `#000000`, `#FFFFFF`, `#ED000C`,
+  `#B10000`. No greys, no tinted surfaces, no uppercase text, no negative
+  letter-spacing, no scroll animations.
+- `src/styles/global.css` conforms to the spec. Section 13 of the rule book
+  records what was changed to get there — do not reintroduce any of it. The
+  only open item is the heading font (Inter stands in for Adobe `acumin-pro`,
+  which is licensed per-domain).
 
 ## Security rules — non-negotiable
 

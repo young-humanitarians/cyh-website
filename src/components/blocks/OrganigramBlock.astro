@@ -1,0 +1,431 @@
+---
+import { Image } from 'astro:assets';
+import Section from '~/components/Section.astro';
+import Placeholder from '~/components/Placeholder.astro';
+import { inline } from '~/lib/inline';
+import { getOrganigram } from '~/lib/blocks';
+import { getSiteSettings } from '~/lib/site';
+import type { Block } from '~/lib/blocks';
+
+/**
+ * The CYH organigram, derived from the team collection so it cannot drift
+ * from the profiles.
+ *
+ * It is a nested list first and a pan/zoom canvas second. Without JavaScript
+ * — or with a keyboard, or a screen reader — it is an ordinary outline that
+ * scrolls; the pan/zoom layer is added on top only if the script loads. Each
+ * person is a <details>, which is what makes "click a role to open a card"
+ * work without inventing a widget.
+ *
+ * The draft asks for a colour per department. The palette has four colours
+ * (docs/design-rules.md §2), so departments alternate between a red and a
+ * black header block instead of taking a hue each.
+ */
+interface Props {
+  block: Block<'organigram'>;
+}
+
+const { block } = Astro.props;
+const { note, placeholder, ...section } = block;
+
+const { board, departments } = await getOrganigram();
+const settings = await getSiteSettings();
+const { ui } = settings;
+---
+
+<Section {...section}>
+  {departments.length === 0 && placeholder && <Placeholder text={placeholder} />}
+  <div class="org" data-org>
+    <div class="org__controls">
+      <button type="button" class="org__button" data-org-zoom="in">
+        <span aria-hidden="true">+</span>
+        <span class="visually-hidden">{ui.organigramZoomIn}</span>
+      </button>
+      <button type="button" class="org__button" data-org-zoom="out">
+        <span aria-hidden="true">−</span>
+        <span class="visually-hidden">{ui.organigramZoomOut}</span>
+      </button>
+      <button type="button" class="org__button org__button--wide" data-org-zoom="reset">
+        {ui.organigramReset}
+      </button>
+      <p class="org__hint">{ui.organigramHint}</p>
+    </div>
+
+    <div class="org__viewport" data-org-viewport>
+      <div class="org__canvas" data-org-canvas>
+        {
+          board.length > 0 && (
+            <ul class="org__board">
+              {board.map((person) => (
+                <li>
+                  <details class="person person--board">
+                    <summary class="person__summary panzoom-exclude">
+                      <span class="person__name">{person.name}</span>
+                      <span class="person__role">{person.role}</span>
+                    </summary>
+                    <div class="person__card">
+                      {person.photo && (
+                        <Image
+                          src={person.photo}
+                          alt=""
+                          widths={[96, 192]}
+                          sizes="96px"
+                          loading="lazy"
+                        />
+                      )}
+                      {person.note && <p>{person.note}</p>}
+                    </div>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+
+        <ul class="org__departments">
+          {
+            departments.map((department, index) => (
+              <li
+                class="org__department"
+                data-accent={index % 2 === 0 ? 'red' : 'black'}
+              >
+                <h3 class="org__department-name">{department.name}</h3>
+
+                {department.directors.length > 0 && (
+                  <ul class="org__people">
+                    {department.directors.map((person) => (
+                      <li>
+                        <details class="person person--director">
+                          <summary class="person__summary panzoom-exclude">
+                            <span class="person__name">{person.name}</span>
+                            <span class="person__role">{person.role}</span>
+                          </summary>
+                          <div class="person__card">
+                            {person.photo && (
+                              <Image
+                                src={person.photo}
+                                alt=""
+                                widths={[96, 192]}
+                                sizes="96px"
+                                loading="lazy"
+                              />
+                            )}
+                            {person.note && <p>{person.note}</p>}
+                          </div>
+                        </details>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {department.teams.map((team) => (
+                  <div class="org__team">
+                    <h4 class="org__team-name">{team.name}</h4>
+                    <ul class="org__people">
+                      {team.members.map((person) => (
+                        <li>
+                          <details class:list={['person', `person--${person.level}`]}>
+                            <summary class="person__summary panzoom-exclude">
+                              <span class="person__name">{person.name}</span>
+                              <span class="person__role">{person.role}</span>
+                            </summary>
+                            <div class="person__card">
+                              {person.photo && (
+                                <Image
+                                  src={person.photo}
+                                  alt=""
+                                  widths={[96, 192]}
+                                  sizes="96px"
+                                  loading="lazy"
+                                />
+                              )}
+                              {person.note && <p>{person.note}</p>}
+                            </div>
+                          </details>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+
+                {department.loose.length > 0 && (
+                  <ul class="org__people">
+                    {department.loose.map((person) => (
+                      <li>
+                        <details class:list={['person', `person--${person.level}`]}>
+                          <summary class="person__summary panzoom-exclude">
+                            <span class="person__name">{person.name}</span>
+                            <span class="person__role">{person.role}</span>
+                          </summary>
+                          <div class="person__card">
+                            {person.photo && (
+                              <Image
+                                src={person.photo}
+                                alt=""
+                                widths={[96, 192]}
+                                sizes="96px"
+                                loading="lazy"
+                              />
+                            )}
+                            {person.note && <p>{person.note}</p>}
+                          </div>
+                        </details>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {note && <p class="org__note" set:html={inline(note)} />}
+</Section>
+
+<style>
+  .org__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+    margin-block-end: var(--s-4);
+    /* Only meaningful once the pan/zoom script has attached. */
+    display: none;
+  }
+
+  .org[data-org-ready] .org__controls {
+    display: flex;
+  }
+
+  .org__button {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding-inline: var(--s-3);
+    font-family: var(--f-heading);
+    font-size: var(--t-base);
+    font-weight: 500;
+    color: var(--c-fg);
+    background: var(--c-bg);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+
+  .org__button:hover {
+    background: var(--c-fg);
+    color: var(--c-bg);
+  }
+
+  .org__button--wide {
+    min-width: auto;
+  }
+
+  .org__hint {
+    font-size: var(--t-sm);
+  }
+
+  .org__viewport {
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    padding: var(--s-5);
+    overflow: auto;
+  }
+
+  .org[data-org-ready] .org__viewport {
+    overflow: hidden;
+    cursor: grab;
+    /* Tall enough to be a canvas, short enough not to swallow the page. */
+    height: min(80vh, 46rem);
+  }
+
+  .org[data-org-ready] .org__viewport:active {
+    cursor: grabbing;
+  }
+
+  .org__canvas {
+    transform-origin: 0 0;
+    min-width: max-content;
+  }
+
+  .org__board,
+  .org__departments,
+  .org__people {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .org__board {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-4);
+    margin-block-end: var(--s-6);
+    padding-block-end: var(--s-6);
+    border-block-end: 1px solid var(--c-rule);
+  }
+
+  .org__departments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-6);
+    align-items: flex-start;
+  }
+
+  .org__department {
+    flex: 1 1 16rem;
+    min-width: 15rem;
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .org__department-name {
+    margin: 0;
+    padding: var(--s-3) var(--s-4);
+    font-size: var(--t-base);
+    font-weight: 500;
+  }
+
+  .org__department[data-accent='red'] .org__department-name {
+    background: var(--c-red);
+    color: var(--c-white);
+  }
+
+  .org__department[data-accent='black'] .org__department-name {
+    background: var(--c-fg);
+    color: var(--c-bg);
+  }
+
+  .org__team {
+    padding: var(--s-3) var(--s-4) 0;
+  }
+
+  .org__team-name {
+    margin: 0 0 var(--s-2);
+    font-size: var(--t-sm);
+    font-weight: 500;
+  }
+
+  .org__people {
+    padding: var(--s-2) var(--s-4) var(--s-4);
+    display: grid;
+    gap: var(--s-2);
+  }
+
+  .org__team .org__people {
+    padding-inline: 0;
+    padding-block-end: var(--s-3);
+  }
+
+  .person__summary {
+    cursor: pointer;
+    list-style: none;
+    display: grid;
+    padding: var(--s-2);
+    border-radius: var(--radius);
+  }
+
+  .person__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .person__summary:hover {
+    background: var(--c-red);
+    color: var(--c-white);
+  }
+
+  .person__name {
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .person--director .person__name,
+  .person--board .person__name {
+    font-family: var(--f-heading);
+    font-weight: 500;
+  }
+
+  .person__role {
+    font-size: var(--t-sm);
+    line-height: 1.4;
+  }
+
+  .person__card {
+    display: flex;
+    gap: var(--s-3);
+    align-items: flex-start;
+    padding: var(--s-3);
+    margin-block-start: var(--s-2);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    font-size: var(--t-sm);
+  }
+
+  .person__card :global(img) {
+    width: 4rem;
+    height: 4rem;
+    object-fit: cover;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .person__card p {
+    margin: 0;
+  }
+
+  .org__note {
+    margin-block-start: var(--s-5);
+    max-width: var(--measure);
+    font-size: var(--t-sm);
+  }
+</style>
+
+<script>
+  import Panzoom from '@panzoom/panzoom';
+
+  /*
+   * Progressive enhancement: without this script the organigram is a plain
+   * scrollable outline, which is why the controls are hidden until
+   * data-org-ready is set.
+   */
+  const root = document.querySelector<HTMLElement>('[data-org]');
+  const viewport = root?.querySelector<HTMLElement>('[data-org-viewport]');
+  const canvas = root?.querySelector<HTMLElement>('[data-org-canvas]');
+
+  if (root && viewport && canvas && !window.matchMedia('(hover: none)').matches) {
+    const panzoom = Panzoom(canvas, {
+      maxScale: 2.5,
+      minScale: 0.4,
+      step: 0.2,
+      contain: 'outside',
+      cursor: 'grab',
+      // Opening a person's card must not start a drag.
+      excludeClass: 'panzoom-exclude',
+    });
+
+    root.setAttribute('data-org-ready', '');
+
+    viewport.addEventListener('wheel', (event) => {
+      // Only zoom when the user means to; a bare wheel still scrolls the page.
+      if (!event.ctrlKey && !event.metaKey) return;
+      panzoom.zoomWithWheel(event);
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-org-zoom]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const mode = button.dataset.orgZoom;
+        if (mode === 'in') panzoom.zoomIn();
+        else if (mode === 'out') panzoom.zoomOut();
+        else panzoom.reset();
+      });
+    });
+
+    // Keyboard users tab through the outline; keep the focused item in view.
+    canvas.addEventListener('focusin', () => {
+      panzoom.reset({ animate: false });
+    });
+  }
+</script>

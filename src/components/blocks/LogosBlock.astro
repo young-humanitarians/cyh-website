@@ -1,0 +1,108 @@
+---
+import { Image } from 'astro:assets';
+import Section from '~/components/Section.astro';
+import Placeholder from '~/components/Placeholder.astro';
+import ActionRow from '~/components/ActionRow.astro';
+import { getPartners } from '~/lib/blocks';
+import { isExternal } from '~/lib/urls';
+import type { Block } from '~/lib/blocks';
+
+/**
+ * Partner logos. Where a partner has no logo file yet the name is shown as
+ * text, so the grid is complete and legible before the assets land.
+ */
+interface Props {
+  block: Block<'logos'>;
+}
+
+const { block } = Astro.props;
+const { category, actions, placeholder, ...section } = block;
+const partners = await getPartners(category);
+---
+
+<Section {...section}>
+  {
+    partners.length > 0 ? (
+      <ul class="logos">
+        {partners.map((partner) => {
+          const inner = partner.data.logo ? (
+            <Image
+              src={partner.data.logo}
+              alt={partner.data.name}
+              widths={[160, 320]}
+              sizes="160px"
+              loading="lazy"
+            />
+          ) : (
+            <span class="logos__name">{partner.data.name}</span>
+          );
+
+          return (
+            <li class="logos__item">
+              {partner.data.href ? (
+                <a
+                  class="logos__link"
+                  href={partner.data.href}
+                  {...(isExternal(partner.data.href)
+                    ? { target: '_blank', rel: 'noopener' }
+                    : {})}
+                >
+                  {inner}
+                </a>
+              ) : (
+                inner
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    ) : (
+      placeholder && <Placeholder text={placeholder} />
+    )
+  }
+  <ActionRow actions={actions} />
+</Section>
+
+<style>
+  .logos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+    gap: var(--s-5);
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .logos__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 5rem;
+    padding: var(--s-4);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  .logos__link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
+
+  .logos__name {
+    font-size: var(--t-sm);
+  }
+
+  .logos :global(img) {
+    max-height: 3.5rem;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .logos + :global(.button-row) {
+    margin-block-start: var(--s-7);
+  }
+</style>

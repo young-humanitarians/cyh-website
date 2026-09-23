@@ -1,0 +1,91 @@
+---
+import Section from '~/components/Section.astro';
+import { inline } from '~/lib/inline';
+import type { Block } from '~/lib/blocks';
+
+/**
+ * The draft asks for terms like "Zuversicht" and "humanitarian culture" to pop
+ * up when clicked. A native <details> gives exactly that: it toggles without
+ * JavaScript, it is keyboard-operable, and screen readers announce its
+ * expanded state — none of which a hand-rolled tooltip would.
+ */
+interface Props {
+  block: Block<'explainer'>;
+}
+
+const { block } = Astro.props;
+const { term, summary, body, ...section } = block;
+---
+
+<Section {...section} narrow>
+  <details class="explainer">
+    <summary class="explainer__summary">
+      <span class="explainer__term">{term}</span>
+      <span class="explainer__hint" set:html={inline(summary)} />
+    </summary>
+    <div class="explainer__body">
+      {body.map((paragraph) => <p set:html={inline(paragraph)} />)}
+    </div>
+  </details>
+</Section>
+
+<style>
+  .explainer {
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    padding: var(--s-5);
+    max-width: var(--measure);
+  }
+
+  .explainer__summary {
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-2) var(--s-4);
+    list-style: none;
+  }
+
+  .explainer__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .explainer__term {
+    font-family: var(--f-heading);
+    font-size: var(--t-h4);
+    font-weight: 500;
+    color: var(--c-accent);
+  }
+
+  .explainer__hint {
+    font-size: var(--t-sm);
+  }
+
+  /* A plain +/− rather than a disclosure triangle, to stay in the palette. */
+  .explainer__summary::after {
+    content: '+';
+    margin-inline-start: auto;
+    font-family: var(--f-heading);
+    font-size: var(--t-h4);
+    line-height: 1;
+  }
+
+  .explainer[open] .explainer__summary::after {
+    content: '−';
+  }
+
+  .explainer__body {
+    margin-block-start: var(--s-4);
+    padding-block-start: var(--s-4);
+    border-block-start: 1px solid var(--c-rule);
+  }
+
+  .explainer__body > * + * {
+    margin-block-start: var(--s-4);
+  }
+
+  .explainer :global(a) {
+    color: var(--c-link);
+    text-decoration: underline;
+  }
+</style>

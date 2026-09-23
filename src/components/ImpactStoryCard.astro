@@ -1,0 +1,117 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { inline } from '~/lib/inline';
+
+/**
+ * One Skill Activation story, told in the draft's own three beats: the
+ * problem, the action, the shift. Keeping those as separate fields rather
+ * than free prose is what makes the pattern visible across stories.
+ */
+interface Props {
+  story: CollectionEntry<'impactStories'>;
+}
+
+const { story } = Astro.props;
+const { title, person, personRole, problem, action, shift, embedUrl, photo } = story.data;
+---
+
+<article class="story card">
+  {
+    embedUrl ? (
+      <div class="story__frame">
+        <iframe
+          src={embedUrl}
+          title={title}
+          loading="lazy"
+          allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"
+          allowfullscreen
+        />
+      </div>
+    ) : (
+      photo && (
+        <Image
+          class="story__photo"
+          src={photo}
+          alt=""
+          widths={[400, 800]}
+          sizes="(min-width: 48rem) 24rem, 90vw"
+          loading="lazy"
+        />
+      )
+    )
+  }
+
+  <h3 class="title-sm">{title}</h3>
+
+  <p class="story__person">
+    {person}
+    {personRole && <span> — {personRole}</span>}
+  </p>
+
+  <dl class="story__beats">
+    <div>
+      <dt>Problem</dt>
+      <dd set:html={inline(problem)} />
+    </div>
+    <div>
+      <dt>Action</dt>
+      <dd set:html={inline(action)} />
+    </div>
+    <div>
+      <dt>Shift</dt>
+      <dd set:html={inline(shift)} />
+    </div>
+  </dl>
+</article>
+
+<style>
+  .story__frame {
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .story__frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .story__photo {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  .story__person {
+    font-size: var(--t-sm);
+    color: var(--c-accent);
+  }
+
+  .story__beats {
+    display: grid;
+    gap: var(--s-3);
+    margin: 0;
+  }
+
+  .story__beats div {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: var(--s-3);
+    align-items: baseline;
+  }
+
+  .story__beats dt {
+    font-size: var(--t-sm);
+    font-weight: 400;
+    color: var(--c-accent);
+  }
+
+  .story__beats dd {
+    margin: 0;
+  }
+</style>

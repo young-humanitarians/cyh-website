@@ -1,0 +1,61 @@
+---
+import TextBlock from '~/components/blocks/TextBlock.astro';
+import ExplainerBlock from '~/components/blocks/ExplainerBlock.astro';
+import CardsBlock from '~/components/blocks/CardsBlock.astro';
+import StatsBlock from '~/components/blocks/StatsBlock.astro';
+import EvidenceBlock from '~/components/blocks/EvidenceBlock.astro';
+import LogosBlock from '~/components/blocks/LogosBlock.astro';
+import VideosBlock from '~/components/blocks/VideosBlock.astro';
+import GalleryBlock from '~/components/blocks/GalleryBlock.astro';
+import MapBlock from '~/components/blocks/MapBlock.astro';
+import OrganigramBlock from '~/components/blocks/OrganigramBlock.astro';
+import CollectionBlock from '~/components/blocks/CollectionBlock.astro';
+import DonationBlock from '~/components/blocks/DonationBlock.astro';
+import CtaBlock from '~/components/blocks/CtaBlock.astro';
+import { flattenSections, type StoredSection } from '~/lib/blocks';
+
+/**
+ * Dispatches a page's `sections` array to the component for each block type.
+ * Adding a block means: a case in the content schema, a component, an entry
+ * here, and a matching Keystatic field. All four, or the editor cannot use it.
+ */
+interface Props {
+  sections: readonly StoredSection[];
+}
+
+const { sections } = Astro.props;
+const blocks = flattenSections(sections);
+---
+
+{
+  blocks.map((block) => {
+    switch (block.type) {
+      case 'text':
+        return <TextBlock block={block} />;
+      case 'explainer':
+        return <ExplainerBlock block={block} />;
+      case 'cards':
+        return <CardsBlock block={block} />;
+      case 'stats':
+        return <StatsBlock block={block} />;
+      case 'evidence':
+        return <EvidenceBlock block={block} />;
+      case 'logos':
+        return <LogosBlock block={block} />;
+      case 'videos':
+        return <VideosBlock block={block} />;
+      case 'gallery':
+        return <GalleryBlock block={block} />;
+      case 'map':
+        return <MapBlock block={block} />;
+      case 'organigram':
+        return <OrganigramBlock block={block} />;
+      case 'collection':
+        return <CollectionBlock block={block} />;
+      case 'donation':
+        return <DonationBlock block={block} />;
+      case 'cta':
+        return <CtaBlock block={block} />;
+    }
+  })
+}

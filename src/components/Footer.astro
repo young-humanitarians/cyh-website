@@ -12,7 +12,7 @@ const { footer, newsletter, ui, siteName } = settings;
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer">
+<footer class="site-footer" data-theme="black">
   <div class="wrap site-footer__inner">
     <section class="site-footer__newsletter" aria-labelledby="newsletter-heading">
       <h2 id="newsletter-heading" class="title-md">{newsletter.heading}</h2>
@@ -73,24 +73,20 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
+  /* The footer is the page's black band; tokens come from [data-theme]. */
   .site-footer {
-    margin-block-start: var(--s-9);
     padding-block: var(--s-8) var(--s-6);
-    background: var(--c-ink);
-    color: var(--c-paper);
+    background: var(--c-bg);
+    color: var(--c-fg);
   }
 
   .site-footer :global(a) {
-    color: var(--c-paper);
+    color: var(--c-fg);
   }
 
   .site-footer :global(a:hover) {
-    color: var(--c-paper);
+    color: var(--c-fg);
     text-decoration-color: var(--c-red);
-  }
-
-  .site-footer :global(:focus-visible) {
-    outline-color: var(--c-paper);
   }
 
   .site-footer__inner {
@@ -111,61 +107,59 @@ const year = new Date().getFullYear();
 
   .site-footer__note {
     margin-block-start: var(--s-2);
-    color: hsl(0 0% 100% / 0.72);
   }
 
   .newsletter-form {
-    margin-block-start: var(--s-4);
-    max-width: 26rem;
+    margin-block-start: var(--s-5);
+    max-width: 28rem;
   }
 
   .newsletter-form__label {
     display: block;
-    font-size: var(--t-sm);
-    font-weight: 500;
+    font-size: var(--t-base);
     margin-block-end: var(--s-2);
   }
 
   .newsletter-form__row {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--s-2);
+    gap: var(--s-3);
   }
 
   .newsletter-form__input {
-    flex: 1 1 12rem;
+    flex: 1 1 14rem;
     min-width: 0;
-    padding: 0.7em 1em;
+    padding: 0.8em 1em;
     font: inherit;
-    color: var(--c-ink);
-    background: var(--c-paper);
-    border: 1.5px solid transparent;
-    border-radius: 999px;
+    color: var(--c-black);
+    background: var(--c-white);
+    border: 1px solid var(--c-white);
+    border-radius: var(--radius);
   }
 
-  .newsletter-form .button {
+  /* Red on black is the one place the accent reads as a control here. */
+  .newsletter-form :global(.button) {
     background: var(--c-red);
     border-color: var(--c-red);
-    color: var(--c-paper);
+    color: var(--c-white);
+    min-width: 0;
   }
 
-  .newsletter-form .button:hover {
-    background: var(--c-paper);
-    border-color: var(--c-paper);
-    color: var(--c-ink);
+  .newsletter-form :global(.button:hover) {
+    background: var(--c-white);
+    border-color: var(--c-white);
+    color: var(--c-black);
   }
 
   .site-footer__meta {
     display: grid;
     gap: var(--s-5);
-    font-size: var(--t-sm);
   }
 
   .site-footer__address {
     display: grid;
     gap: var(--s-1);
     font-style: normal;
-    color: hsl(0 0% 100% / 0.82);
   }
 
   .site-footer__links {
@@ -179,8 +173,7 @@ const year = new Date().getFullYear();
 
   .site-footer__copyright {
     padding-block-start: var(--s-5);
-    border-block-start: 1px solid hsl(0 0% 100% / 0.16);
-    font-size: var(--t-xs);
-    color: hsl(0 0% 100% / 0.64);
+    border-block-start: 1px solid var(--c-white);
+    font-size: var(--t-sm);
   }
 </style>

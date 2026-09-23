@@ -1,0 +1,100 @@
+---
+import Section from '~/components/Section.astro';
+import Placeholder from '~/components/Placeholder.astro';
+import { inline } from '~/lib/inline';
+import { href as withBase, isExternal } from '~/lib/urls';
+import type { Block } from '~/lib/blocks';
+
+interface Props {
+  block: Block<'donation'>;
+}
+
+const { block } = Astro.props;
+const { methods, placeholder, ...section } = block;
+---
+
+<Section {...section}>
+  {methods.length === 0 && placeholder && <Placeholder text={placeholder} />}
+  <ul class="donation">
+    {
+      methods.map((method) => (
+        <li class="donation__item">
+          <h3 class="title-sm">{method.title}</h3>
+          {method.text && <p set:html={inline(method.text)} />}
+          {method.details.length > 0 && (
+            <dl class="donation__details">
+              {method.details.map((detail) => (
+                <div class="donation__detail">
+                  {detail.label && <dt>{detail.label}</dt>}
+                  <dd>{detail.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {method.action && (
+            <p>
+              <a
+                class="button button--secondary"
+                href={withBase(method.action.href)}
+                {...(isExternal(method.action.href)
+                  ? { target: '_blank', rel: 'noopener' }
+                  : {})}
+              >
+                {method.action.label}
+              </a>
+            </p>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</Section>
+
+<style>
+  .donation {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: var(--s-6);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .donation__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+  }
+
+  .donation__details {
+    margin: 0;
+    font-size: var(--t-sm);
+  }
+
+  .donation__detail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+  }
+
+  .donation__detail dt {
+    font-weight: 400;
+  }
+
+  .donation__detail dd {
+    margin: 0;
+  }
+
+  .donation__item :global(a) {
+    color: var(--c-link);
+  }
+
+  .donation__item .button:where(:any-link) {
+    align-self: flex-start;
+    margin-block-start: auto;
+    color: var(--c-fg);
+  }
+</style>

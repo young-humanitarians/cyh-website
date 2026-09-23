@@ -1,7 +1,7 @@
 siteName: Circle of Young Humanitarians
 shortName: CYH
 tagline: >-
-  Building a bridge between the humanitarian world and the next generation.
+  Turn what you already have into humanitarian contribution.
 logoAlt: Circle of Young Humanitarians
 
 navigation:
@@ -18,16 +18,28 @@ navigation:
         href: /team
       - label: Advisory Board
         href: /advisory-board
+      - label: Partnerships
+        href: /partnerships
   - label: Initiatives
     children:
+      - label: All initiatives
+        href: /initiatives
       - label: Events
         href: /events
-      - label: Podcast
-        href: /podcast
+      - label: CYH Lab
+        href: /cyh-lab
+      - label: HSG Master Course
+        href: /hsg-master-course
       - label: Humanitarian Wayfinder
         href: /humanitarian-wayfinder
+      - label: Podcast
+        href: /podcast
   - label: Summit
     children:
+      - label: About the Summit
+        href: /summit
+      - label: Summit 2027
+        href: /summit-2027
       - label: Summit 2026
         href: /summit-2026
       - label: Summit 2025
@@ -53,13 +65,18 @@ social:
   - platform: linkedin
     label: Circle of Young Humanitarians auf LinkedIn
     href: https://www.linkedin.com/company/circle-of-young-humanitarians/
+  - platform: youtube
+    label: Circle of Young Humanitarians auf YouTube
+    href: https://www.youtube.com/@circleofyounghumanitarians
   - platform: spotify
     label: Young Humanitarian Podcast auf Spotify
     href: https://open.spotify.com/show/7tmFop3ZEWJn95nYs7gGY2
 
 newsletter:
   heading: Stay Up to Date with the CYH Newsletter
-  description: ''
+  description: >-
+    Skill Activation stories, upcoming events and Summit updates, and the questions we are
+    working on next.
   emailLabel: Email Address
   buttonLabel: Subscribe
   actionUrl: http://eepurl.com/iSgX--
@@ -94,3 +111,9 @@ ui:
   notFoundAction: Zur Startseite
   contentLanguageNote: >-
     Die Inhalte dieser Website sind auf Englisch verfasst.
+  organigramZoomIn: Vergrössern
+  organigramZoomOut: Verkleinern
+  organigramReset: Ansicht zurücksetzen
+  organigramHint: Ziehen zum Verschieben, Strg + Mausrad zum Zoomen.
+  mapCountries: Countries our members come from
+  readMore: Read more

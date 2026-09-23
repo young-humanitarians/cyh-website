@@ -84,9 +84,14 @@ const { navigation, ui, siteName, logoAlt } = settings;
 </header>
 
 <style>
+  /*
+   * Logo left, navigation right; full width; not sticky, not transparent.
+   * Logo 117px on desktop and at most 70px on mobile, matching the live site
+   * (docs/design-rules.md §7).
+   */
   .site-header {
-    border-block-end: 1px solid var(--c-rule);
-    background: var(--c-paper);
+    background: var(--c-white);
+    color: var(--c-black);
   }
 
   .site-header__inner {
@@ -95,7 +100,13 @@ const { navigation, ui, siteName, logoAlt } = settings;
     justify-content: space-between;
     gap: var(--s-5);
     flex-wrap: wrap;
-    padding-block: var(--s-3);
+    padding-block: 6vw;
+  }
+
+  @media (min-width: 48rem) {
+    .site-header__inner {
+      padding-block: 2vw;
+    }
   }
 
   .site-header__brand {
@@ -104,7 +115,7 @@ const { navigation, ui, siteName, logoAlt } = settings;
   }
 
   .site-header__brand :global(img) {
-    width: 4rem;
+    width: 70px;
     height: auto;
     transition: transform 900ms cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -125,9 +136,9 @@ const { navigation, ui, siteName, logoAlt } = settings;
     }
   }
 
-  @media (min-width: 60rem) {
+  @media (min-width: 62rem) {
     .site-header__brand :global(img) {
-      width: 5.25rem;
+      width: 117px;
     }
   }
 
@@ -137,14 +148,15 @@ const { navigation, ui, siteName, logoAlt } = settings;
     display: inline-flex;
     align-items: center;
     gap: var(--s-2);
-    padding: var(--s-2) var(--s-3);
-    font-family: var(--f-heading);
-    font-size: var(--t-sm);
-    font-weight: 600;
-    color: var(--c-ink);
+    min-height: 2.75rem;
+    padding: var(--s-2) var(--s-4);
+    font-family: var(--f-body);
+    font-size: var(--t-base);
+    font-weight: 400;
+    color: var(--c-black);
     background: transparent;
-    border: 1.5px solid var(--c-rule);
-    border-radius: 999px;
+    border: 1px solid var(--c-black);
+    border-radius: var(--radius);
     cursor: pointer;
   }
 
@@ -153,7 +165,7 @@ const { navigation, ui, siteName, logoAlt } = settings;
   .site-header__toggle-bars::after {
     display: block;
     width: 1rem;
-    height: 2px;
+    height: 1px;
     background: currentColor;
     content: '';
   }
@@ -188,22 +200,20 @@ const { navigation, ui, siteName, logoAlt } = settings;
   .site-nav__link,
   .site-nav__sublink {
     display: block;
-    font-family: var(--f-heading);
-    font-weight: 600;
+    font-family: var(--f-body);
+    font-weight: 400;
     text-decoration: none;
-    color: var(--c-ink);
+    color: var(--c-black);
   }
 
   .site-nav__link {
-    font-size: var(--t-sm);
-    letter-spacing: 0.02em;
+    font-size: var(--t-base);
     padding-block: var(--s-2);
   }
 
   .site-nav__sublink {
-    font-weight: 500;
-    font-size: var(--t-sm);
-    color: var(--c-ink-soft);
+    font-weight: 300;
+    font-size: var(--t-base);
     padding-block: var(--s-1);
   }
 
@@ -214,7 +224,7 @@ const { navigation, ui, siteName, logoAlt } = settings;
 
   a.site-nav__link:hover,
   .site-nav__sublink:hover {
-    color: var(--c-red-dark);
+    color: var(--c-red);
   }
 
   /* Small screens: the whole menu collapses behind the toggle. */
@@ -222,7 +232,7 @@ const { navigation, ui, siteName, logoAlt } = settings;
     .site-nav {
       display: none;
       padding-block: var(--s-3) var(--s-5);
-      border-block-start: 1px solid var(--c-rule);
+      border-block-start: 1px solid var(--c-black);
     }
 
     .site-nav[data-open] {
@@ -230,13 +240,14 @@ const { navigation, ui, siteName, logoAlt } = settings;
     }
 
     .site-nav__item + .site-nav__item {
-      border-block-start: 1px solid var(--c-rule);
+      border-block-start: 1px solid var(--c-black);
     }
 
     .site-nav__sub {
       padding-block-end: var(--s-2);
-      padding-inline-start: var(--s-3);
-      border-inline-start: 2px solid var(--c-rule);
+      padding-inline-start: var(--s-4);
+      border-inline-start: 1px solid var(--c-red);
+      margin-inline-start: var(--s-2);
     }
   }
 
@@ -265,17 +276,16 @@ const { navigation, ui, siteName, logoAlt } = settings;
       inset-block-start: 100%;
       inset-inline-start: calc(var(--s-4) * -1);
       z-index: 20;
-      min-width: 14rem;
+      min-width: 15rem;
       padding: var(--s-3);
-      background: var(--c-paper);
-      border: 1px solid var(--c-rule);
+      background: var(--c-white);
+      border: 1px solid var(--c-black);
       border-radius: var(--radius);
-      box-shadow: 0 12px 28px hsl(0 0% 0% / 0.09);
       visibility: hidden;
       opacity: 0;
       transition:
-        opacity 120ms ease,
-        visibility 120ms ease;
+        opacity 100ms ease,
+        visibility 100ms ease;
     }
 
     .site-nav__item--group:hover > .site-nav__sub,
@@ -290,7 +300,8 @@ const { navigation, ui, siteName, logoAlt } = settings;
     }
 
     .site-nav__sublink:hover {
-      background: var(--c-paper-warm);
+      background: var(--c-red);
+      color: var(--c-white);
     }
   }
 </style>

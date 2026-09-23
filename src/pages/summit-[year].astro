@@ -4,7 +4,9 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import PageHeader from '~/components/PageHeader.astro';
 import ActionRow from '~/components/ActionRow.astro';
-import { href, isExternal } from '~/lib/urls';
+import LogosBlock from '~/components/blocks/LogosBlock.astro';
+import { inline } from '~/lib/inline';
+import { href as withBase, isExternal } from '~/lib/urls';
 import { mdxComponents } from '~/components/mdx/components';
 
 /** One page per Young Humanitarian Summit, at /summit-2026 and so on. */
@@ -21,6 +23,10 @@ const { Content } = await render(summit);
 const {
   title,
   description,
+  facts,
+  tickets,
+  stats,
+  aftermovieUrl,
   speakers,
   speakersHeading,
   speakersNote,
@@ -28,6 +34,7 @@ const {
   workshopsHeading,
   sections,
   outro,
+  year,
 } = summit.data;
 ---
 
@@ -41,8 +48,82 @@ const {
   </section>
 
   {
+    facts.length > 0 && (
+      <section class="section section--flush" aria-labelledby="facts-heading">
+        <div class="wrap">
+          <h2 id="facts-heading" class="title-lg">Important info</h2>
+          <dl class="facts">
+            {facts.map((fact) => (
+              <div class="facts__item">
+                <dt>{fact.label}</dt>
+                <dd>{fact.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    tickets && (
+      <section class="section section--flush" aria-labelledby="tickets-heading">
+        <div class="wrap stack" style="--flow: var(--s-4)">
+          <h2 id="tickets-heading" class="title-lg">
+            {tickets.heading}
+          </h2>
+          {tickets.text && <p class="lead" set:html={inline(tickets.text)} />}
+          {tickets.note && <p set:html={inline(tickets.note)} />}
+          {tickets.action && <ActionRow actions={[tickets.action]} />}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    aftermovieUrl && (
+      <section class="section section--flush" aria-labelledby="aftermovie-heading">
+        <div class="wrap stack" style="--flow: var(--s-5)">
+          <h2 id="aftermovie-heading" class="title-lg">
+            Aftermovie
+          </h2>
+          <div class="aftermovie">
+            <iframe
+              src={aftermovieUrl}
+              title={`Aftermovie — ${title}`}
+              loading="lazy"
+              allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"
+              allowfullscreen
+            />
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    stats.length > 0 && (
+      <section class="section section--flush" aria-labelledby="stats-heading">
+        <div class="wrap">
+          <h2 id="stats-heading" class="title-lg">
+            Impact in numbers
+          </h2>
+          <dl class="stats">
+            {stats.map((stat) => (
+              <div class="stats__item">
+                <dt class="stats__value">{stat.value}</dt>
+                <dd class="stats__label">{stat.label}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+    )
+  }
+
+  {
     speakers.length > 0 && (
-      <section class="section" aria-labelledby="speakers-heading">
+      <section class="section section--flush" aria-labelledby="speakers-heading">
         <div class="wrap stack" style="--flow: var(--s-5)">
           <h2 id="speakers-heading" class="title-lg">
             {speakersHeading}
@@ -63,29 +144,22 @@ const {
 
   {
     workshops.length > 0 && (
-      <section class="section section--sunk" aria-labelledby="workshops-heading">
+      <section class="section" data-theme="black" aria-labelledby="workshops-heading">
         <div class="wrap stack" style="--flow: var(--s-5)">
           <h2 id="workshops-heading" class="title-lg">
             {workshopsHeading}
           </h2>
-          <div class="grid grid--2">
+          <ul class="workshops">
             {workshops.map((workshop) => (
-              <article class="card">
-                {(workshop.organisation || workshop.format) && (
-                  <p class="card__meta">
-                    {workshop.organisation}
-                    {workshop.organisation && workshop.format && (
-                      <span aria-hidden="true"> · </span>
-                    )}
-                    {workshop.format}
-                  </p>
-                )}
+              <li class="workshop">
                 <h3 class="title-sm">{workshop.title}</h3>
-                {workshop.description && <p class="card__body">{workshop.description}</p>}
+                {workshop.organisation && <p class="workshop__org">{workshop.organisation}</p>}
+                {workshop.format && <p class="workshop__format">{workshop.format}</p>}
+                {workshop.description && <p>{workshop.description}</p>}
                 {workshop.link && (
-                  <p class="workshop__link">
+                  <p>
                     <a
-                      href={href(workshop.link.href)}
+                      href={withBase(workshop.link.href)}
                       {...(isExternal(workshop.link.href)
                         ? { target: '_blank', rel: 'noopener' }
                         : {})}
@@ -95,42 +169,52 @@ const {
                     </a>
                   </p>
                 )}
-              </article>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
     )
   }
 
   {
-    sections.length > 0 && (
-      <section class="section">
-        <div class="wrap stack" style="--flow: var(--s-7)">
-          {sections.map((block) => (
-            <div class="stack" style="--flow: var(--s-3)">
-              <h2 class="title-md">{block.heading}</h2>
-              {block.text && <p class="summit-block__text">{block.text}</p>}
-              {block.items.length > 0 && (
-                <ul class="summit-facts">
-                  {block.items.map((item) => (
-                    <li>{item}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-    )
-  }
-
-  {
-    outro && (outro.text || outro.actions.length > 0) && (
-      <section class="section">
+    sections.map((item) => (
+      <section class="section section--flush">
         <div class="wrap stack" style="--flow: var(--s-4)">
-          {outro.text && <p class="lead">{outro.text}</p>}
-          <ActionRow actions={outro.actions} variant="ghost" />
+          <h2 class="title-lg">{item.heading}</h2>
+          {item.text && <p class="lead" set:html={inline(item.text)} />}
+          {item.items.length > 0 && (
+            <ul class="plain-list">
+              {item.items.map((entry) => (
+                <li set:html={inline(entry)} />
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
+    ))
+  }
+
+  <LogosBlock
+    block={{
+      type: 'logos',
+      theme: 'white',
+      heading: 'Thank you to our Summit Partners & Supporters',
+      category: 'summit',
+      actions: [],
+      anchor: `summit-${year}-partners`,
+    }}
+  />
+
+  {
+    outro && (
+      <section class="section" data-theme="black" aria-labelledby="outro-heading">
+        <div class="wrap stack" style="--flow: var(--s-5)">
+          <h2 id="outro-heading" class="title-lg">
+            Terms &amp; conditions and data protection
+          </h2>
+          {outro.text && <p class="lead" set:html={inline(outro.text)} />}
+          <ActionRow actions={outro.actions} />
         </div>
       </section>
     )
@@ -138,10 +222,62 @@ const {
 </BaseLayout>
 
 <style>
-  .speakers {
+  .facts,
+  .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
     gap: var(--s-5);
+    margin: var(--s-6) 0 0;
+  }
+
+  .facts__item,
+  .stats__item {
+    padding-block-start: var(--s-4);
+    border-block-start: 2px solid var(--c-accent);
+  }
+
+  .facts__item dt {
+    font-size: var(--t-sm);
+  }
+
+  .facts__item dd {
+    margin: var(--s-1) 0 0;
+    font-family: var(--f-heading);
+    font-size: var(--t-h4);
+  }
+
+  .stats__value {
+    font-family: var(--f-heading);
+    font-size: var(--t-h2);
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .stats__label {
+    margin: var(--s-2) 0 0;
+    font-size: var(--t-sm);
+  }
+
+  .aftermovie {
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+    max-width: 60rem;
+  }
+
+  .aftermovie iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .speakers,
+  .workshops {
+    display: grid;
+    gap: var(--s-5);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
     list-style: none;
     margin: 0;
     padding: 0;
@@ -149,50 +285,46 @@ const {
 
   .speaker {
     padding-block-start: var(--s-3);
-    border-block-start: 2px solid var(--c-ink);
+    border-block-start: 1px solid var(--c-rule);
+  }
+
+  .speaker__name {
+    margin: 0;
   }
 
   .speaker__role {
+    font-size: var(--t-sm);
+  }
+
+  .workshops {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+
+  .workshop {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+  }
+
+  .workshop__org,
+  .workshop__format {
+    font-size: var(--t-sm);
+    color: var(--c-accent);
+  }
+
+  .workshop a {
+    color: var(--c-link);
+  }
+
+  .plain-list {
+    padding-inline-start: 1.35em;
+    max-width: var(--measure);
+  }
+
+  .plain-list li + li {
     margin-block-start: var(--s-2);
-    font-size: var(--t-sm);
-    color: var(--c-ink-soft);
-  }
-
-  .workshop__link {
-    margin-block-start: auto;
-    padding-block-start: var(--s-2);
-    font-family: var(--f-heading);
-    font-size: var(--t-sm);
-    font-weight: 600;
-  }
-
-  .workshop__link a {
-    color: var(--c-red-dark);
-    text-decoration: none;
-  }
-
-  .workshop__link a:hover {
-    text-decoration: underline;
-  }
-
-  .summit-block__text {
-    max-width: var(--measure);
-    color: var(--c-ink-soft);
-  }
-
-  .summit-facts {
-    display: grid;
-    gap: var(--s-2);
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    max-width: var(--measure);
-  }
-
-  .summit-facts li {
-    padding-block: var(--s-2);
-    border-block-end: 1px solid var(--c-rule);
-    font-family: var(--f-heading);
-    font-weight: 600;
   }
 </style>

@@ -1,0 +1,39 @@
+---
+import Section from '~/components/Section.astro';
+import ActionRow from '~/components/ActionRow.astro';
+import { inline } from '~/lib/inline';
+import type { Block } from '~/lib/blocks';
+
+/** The closing band. Usually themed black — see docs/design-rules.md §3. */
+interface Props {
+  block: Block<'cta'>;
+}
+
+const { block } = Astro.props;
+const { body, actions, ...section } = block;
+---
+
+<Section {...section} narrow>
+  <div class="cta">
+    {body.map((paragraph) => <p class="lead" set:html={inline(paragraph)} />)}
+    <ActionRow actions={actions} />
+  </div>
+</Section>
+
+<style>
+  .cta > * + * {
+    margin-block-start: var(--s-5);
+  }
+
+  .cta :global(a) {
+    color: var(--c-link);
+  }
+
+  .cta :global(.button) {
+    color: var(--c-btn-fg);
+  }
+
+  .cta :global(.button--secondary) {
+    color: var(--c-fg);
+  }
+</style>

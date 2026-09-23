@@ -1,36 +1,53 @@
 /*
- * Design tokens.
+ * Design tokens — see docs/design-rules.md.
  *
- * The palette is taken from the current site: a single strong red on
- * near-black and off-white, matching the CYH seal. The red is used sparingly —
- * for accents, links and one button style — so it keeps its weight.
+ * Every value here is taken from the live site at
+ * https://circleofyounghumanitarians.ch/, which is the source of truth.
+ * Four colours, two families, no greys, no uppercase, no animation.
  */
 :root {
-  /* Brand */
-  --c-red: hsl(357 100% 46%);
-  --c-red-dark: hsl(0 100% 35%);
-  --c-ink: hsl(0 0% 8%);
-  --c-ink-soft: hsl(0 0% 27%);
-  --c-ink-mute: hsl(0 0% 42%);
-  --c-paper: hsl(0 0% 100%);
-  --c-paper-warm: hsl(20 12% 97%);
-  --c-paper-sunk: hsl(20 8% 94%);
-  --c-rule: hsl(20 8% 88%);
+  /* -- Brand. These four are the entire palette. -- */
+  --c-red: hsl(356.96 100% 46.47%);
+  --c-red-dark: hsl(0 100% 34.71%);
+  --c-black: hsl(0 0% 0%);
+  --c-white: hsl(0 0% 100%);
 
-  /* Type */
-  --f-heading: var(--font-heading), system-ui, sans-serif;
-  --f-body: var(--font-body), system-ui, sans-serif;
+  /*
+   * Theme slots. Sections re-point these via [data-theme]; components only
+   * ever reference the slots, never the brand colours directly. This is what
+   * makes a black band work without every component knowing about it.
+   */
+  --c-bg: var(--c-white);
+  --c-fg: var(--c-black);
+  --c-link: var(--c-red-dark);
+  --c-link-hover: var(--c-red);
+  --c-accent: var(--c-red);
+  --c-rule: var(--c-black);
+  --c-btn-bg: var(--c-red);
+  --c-btn-fg: var(--c-white);
+  --c-btn-ghost-fg: var(--c-black);
+  --c-focus: var(--c-red);
 
-  /* Fluid type scale */
-  --t-xs: 0.8125rem;
-  --t-sm: 0.9375rem;
-  --t-base: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
-  --t-lg: clamp(1.125rem, 1.06rem + 0.3vw, 1.3125rem);
-  --t-xl: clamp(1.375rem, 1.24rem + 0.6vw, 1.75rem);
-  --t-2xl: clamp(1.75rem, 1.5rem + 1.1vw, 2.5rem);
-  --t-3xl: clamp(2.125rem, 1.7rem + 1.9vw, 3.5rem);
+  /* -- Type -- */
+  --f-heading: var(--font-heading), 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --f-body: var(--font-body), 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 
-  /* Rhythm */
+  /*
+   * Reproduces the live site's fluid scale: (V-1)*1.2vw + 1rem, capped at
+   * (V-1)*0.012*1800px + 1rem. h1 reaches 80.8px, not 64px.
+   */
+  --t-h1: clamp(2.8rem, 3.6vw + 1rem, 5.05rem);
+  --t-h2: clamp(2.08rem, 2.16vw + 1rem, 3.43rem);
+  --t-h3: clamp(1.72rem, 1.44vw + 1rem, 2.62rem);
+  --t-h4: clamp(1.36rem, 0.72vw + 1rem, 1.81rem);
+  --t-lg: clamp(1.3rem, 0.6vw + 1rem, 1.68rem);
+  --t-base: 1rem;
+  --t-sm: 0.9rem;
+
+  --lh-heading: 1.4;
+  --lh-body: 1.8;
+
+  /* -- Rhythm -- */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
@@ -39,13 +56,51 @@
   --s-6: 2rem;
   --s-7: 3rem;
   --s-8: 4rem;
-  --s-9: clamp(3.5rem, 2rem + 6vw, 6.5rem);
+  --s-9: clamp(3.5rem, 2rem + 6vw, 7rem);
 
-  --measure: 66ch;
-  --wrap: 72rem;
-  --wrap-narrow: 46rem;
-  --radius: 4px;
-  --focus: 3px solid var(--c-red);
+  /* -- Layout -- */
+  --wrap: 1800px;
+  --wrap-narrow: 60rem;
+  --gutter: 6vw;
+  --measure: 68ch;
+  --radius: 6.4px;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --gutter: 3vw;
+  }
+}
+
+/* Section colour themes. Only `white` (the default) and `black` are in use. */
+[data-theme='black'] {
+  --c-bg: var(--c-black);
+  --c-fg: var(--c-white);
+  --c-link: var(--c-white);
+  --c-link-hover: var(--c-white);
+  --c-accent: var(--c-white);
+  --c-rule: var(--c-white);
+  --c-btn-bg: var(--c-white);
+  --c-btn-fg: var(--c-black);
+  --c-btn-ghost-fg: var(--c-white);
+  --c-focus: var(--c-white);
+  background: var(--c-bg);
+  color: var(--c-fg);
+}
+
+[data-theme='bright'] {
+  --c-bg: var(--c-red);
+  --c-fg: var(--c-white);
+  --c-link: var(--c-white);
+  --c-link-hover: var(--c-white);
+  --c-accent: var(--c-white);
+  --c-rule: var(--c-white);
+  --c-btn-bg: var(--c-white);
+  --c-btn-fg: var(--c-red);
+  --c-btn-ghost-fg: var(--c-white);
+  --c-focus: var(--c-white);
+  background: var(--c-bg);
+  color: var(--c-fg);
 }
 
 *,
@@ -60,11 +115,12 @@ html {
 
 body {
   margin: 0;
-  background: var(--c-paper);
-  color: var(--c-ink);
+  background: var(--c-white);
+  color: var(--c-black);
   font-family: var(--f-body);
   font-size: var(--t-base);
-  line-height: 1.65;
+  font-weight: 300;
+  line-height: var(--lh-body);
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
 }
@@ -76,9 +132,9 @@ h4,
 h5,
 h6 {
   font-family: var(--f-heading);
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
+  font-weight: 500;
+  line-height: var(--lh-heading);
+  letter-spacing: 0;
   text-wrap: balance;
   margin: 0;
 }
@@ -107,18 +163,13 @@ a {
 }
 
 a:hover {
-  color: var(--c-red-dark);
+  color: var(--c-link-hover);
 }
 
 :focus-visible {
-  outline: var(--focus);
+  outline: 3px solid var(--c-focus);
   outline-offset: 3px;
   border-radius: 2px;
-}
-
-/* Only remove the outline where a visible focus style is provided instead. */
-:where(button, [type='submit']):focus-visible {
-  outline-offset: 2px;
 }
 
 hr {
@@ -127,13 +178,18 @@ hr {
   margin: 0;
 }
 
+::selection {
+  background: var(--c-red);
+  color: var(--c-white);
+}
+
 /* ---------------------------------------------------------------- layout */
 
 .wrap {
   width: 100%;
   max-width: var(--wrap);
   margin-inline: auto;
-  padding-inline: clamp(1.25rem, 5vw, 3rem);
+  padding-inline: var(--gutter);
 }
 
 .wrap--narrow {
@@ -146,19 +202,8 @@ hr {
 
 .section {
   padding-block: var(--s-9);
-}
-
-.section + .section {
-  padding-block-start: 0;
-}
-
-.section--sunk {
-  background: var(--c-paper-warm);
-  border-block: 1px solid var(--c-rule);
-}
-
-.section--sunk + .section {
-  padding-block-start: var(--s-9);
+  background: var(--c-bg);
+  color: var(--c-fg);
 }
 
 .visually-hidden {
@@ -179,78 +224,80 @@ hr {
   inset-block-start: var(--s-4);
   z-index: 100;
   padding: var(--s-3) var(--s-4);
-  background: var(--c-ink);
-  color: var(--c-paper);
-  font-weight: 600;
+  background: var(--c-black);
+  color: var(--c-white);
+  font-weight: 500;
   border-radius: var(--radius);
   transform: translateY(-200%);
 }
 
 .skip-link:focus {
   transform: none;
-  color: var(--c-paper);
+  color: var(--c-white);
 }
 
 /* ------------------------------------------------------------ typography */
 
+.title-xl {
+  font-size: var(--t-h1);
+}
+.title-lg {
+  font-size: var(--t-h2);
+}
+.title-md {
+  font-size: var(--t-h3);
+}
+.title-sm {
+  font-size: var(--t-h4);
+}
+
+/*
+ * The live site has no uppercase and no tracked-out labels anywhere. An
+ * eyebrow is therefore just small red sentence-case text.
+ */
 .eyebrow {
   font-family: var(--f-heading);
-  font-size: var(--t-xs);
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--c-red);
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--c-accent);
   margin: 0;
 }
 
 .lead {
   font-size: var(--t-lg);
-  color: var(--c-ink-soft);
   max-width: var(--measure);
 }
 
-.title-xl {
-  font-size: var(--t-3xl);
-}
-.title-lg {
-  font-size: var(--t-2xl);
-}
-.title-md {
-  font-size: var(--t-xl);
-}
-.title-sm {
-  font-size: var(--t-lg);
+.measure {
+  max-width: var(--measure);
 }
 
-/*
- * Body copy rendered from MDX. Scoped so that content authors get sensible
- * spacing without any component having to know what is inside.
- */
+/* Body copy rendered from MDX. */
 .prose {
   max-width: var(--measure);
 }
 
 .prose > * + * {
-  margin-block-start: var(--s-4);
-}
-
-.prose h2 {
-  font-size: var(--t-2xl);
-  margin-block-start: var(--s-7);
-}
-
-.prose h3 {
-  font-size: var(--t-xl);
-  margin-block-start: var(--s-6);
-}
-
-.prose h4 {
-  font-size: var(--t-lg);
   margin-block-start: var(--s-5);
 }
 
+.prose h2 {
+  font-size: var(--t-h2);
+  margin-block-start: var(--s-8);
+}
+
+.prose h3 {
+  font-size: var(--t-h3);
+  margin-block-start: var(--s-7);
+}
+
+.prose h4 {
+  font-size: var(--t-h4);
+  margin-block-start: var(--s-6);
+}
+
 .prose :is(h2, h3, h4) + * {
-  margin-block-start: var(--s-3);
+  margin-block-start: var(--s-4);
 }
 
 .prose :is(ul, ol) {
@@ -262,102 +309,139 @@ hr {
 }
 
 .prose a {
-  color: var(--c-red-dark);
+  color: var(--c-link);
   text-decoration: underline;
 }
 
 .prose strong {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .prose blockquote {
-  border-inline-start: 3px solid var(--c-red);
-  padding-inline-start: var(--s-4);
+  border-inline-start: 3px solid var(--c-accent);
+  padding-inline-start: var(--s-5);
   font-size: var(--t-lg);
-  color: var(--c-ink-soft);
 }
 
 /* --------------------------------------------------------------- buttons */
 
+/*
+ * Three tiers, matching the live site's tokens exactly. Note the primary
+ * button's padding: 1em vertical against 0.6em horizontal. That is the live
+ * design (verified in the served CSS) — do not swap the axes.
+ */
 .button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--s-2);
-  padding: 0.7em 1.35em;
-  font-family: var(--f-heading);
-  font-size: var(--t-sm);
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-family: var(--f-body);
+  font-size: var(--t-lg);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  padding: 1em 0.6em;
+  min-width: 12rem;
+  text-align: center;
   text-decoration: none;
-  border: 1.5px solid var(--c-ink);
-  border-radius: 999px;
-  background: var(--c-ink);
-  color: var(--c-paper);
+  border: 2px solid var(--c-btn-bg);
+  border-radius: var(--radius);
+  background: var(--c-btn-bg);
+  color: var(--c-btn-fg);
   cursor: pointer;
   transition:
-    background-color 120ms ease,
-    border-color 120ms ease,
-    color 120ms ease;
+    background-color 100ms ease,
+    border-color 100ms ease,
+    color 100ms ease;
 }
 
 .button:hover {
-  background: var(--c-red);
-  border-color: var(--c-red);
-  color: var(--c-paper);
+  background: var(--c-btn-fg);
+  color: var(--c-btn-bg);
+  border-color: var(--c-btn-bg);
 }
 
-.button--ghost {
+/* Secondary: outlined, no horizontal padding — reads as a marked text link. */
+.button--secondary {
+  font-size: clamp(1.06rem, 0.12vw + 1rem, 1.14rem);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 1.1em 0;
+  border-width: 1px;
+  border-color: var(--c-fg);
   background: transparent;
-  color: var(--c-ink);
+  color: var(--c-fg);
 }
 
-.button--ghost:hover {
-  background: var(--c-ink);
-  color: var(--c-paper);
-  border-color: var(--c-ink);
+.button--secondary:hover {
+  background: var(--c-fg);
+  color: var(--c-bg);
+  border-color: var(--c-fg);
+}
+
+/* Tertiary: quiet, unboxed. */
+.button--tertiary {
+  font-size: var(--t-base);
+  font-weight: 300;
+  letter-spacing: 0;
+  padding: 1.3rem;
+  min-width: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--c-fg);
+  text-decoration: underline;
+}
+
+.button--tertiary:hover {
+  background: transparent;
+  color: var(--c-link-hover);
+  border-color: transparent;
 }
 
 .button-row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--s-3);
+  gap: var(--s-4);
 }
 
-/* ----------------------------------------------------------------- cards */
+/* ------------------------------------------------------------------ grid */
 
 .grid {
   display: grid;
-  gap: var(--s-5);
+  gap: var(--s-6);
 }
 
 .grid--2 {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
 }
 
 .grid--3 {
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
 }
 
+.grid--4 {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+}
+
+/*
+ * Cards carry no grey chrome. Structure comes from a black hairline and
+ * whitespace, which is what the four-colour palette leaves us.
+ */
 .card {
   display: flex;
   flex-direction: column;
   gap: var(--s-3);
   padding: var(--s-5);
-  background: var(--c-paper);
   border: 1px solid var(--c-rule);
   border-radius: var(--radius);
+  background: var(--c-bg);
+  color: var(--c-fg);
 }
 
 .card__meta {
-  font-size: var(--t-xs);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--c-ink-mute);
-}
-
-.card__body {
-  color: var(--c-ink-soft);
+  font-family: var(--f-body);
+  font-size: var(--t-sm);
+  font-weight: 400;
 }
 
 .card__body > * + * {

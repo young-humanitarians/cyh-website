@@ -1,0 +1,75 @@
+---
+import { inline } from '~/lib/inline';
+
+/**
+ * The wrapper every block renders inside. It owns the three things a block
+ * should not have to think about: the colour theme, the outer measure, and
+ * the heading/intro pair.
+ *
+ * Themes re-point the --c-* slots in global.css, so a block placed on a black
+ * band inverts without any component-level conditional.
+ */
+interface Props {
+  theme?: 'white' | 'black' | 'bright';
+  anchor?: string | undefined;
+  heading?: string | undefined;
+  intro?: string | undefined;
+  headingLevel?: 'h2' | 'h3';
+  narrow?: boolean;
+  /** Suppresses the top padding so two blocks can read as one section. */
+  flush?: boolean;
+}
+
+const {
+  theme = 'white',
+  anchor,
+  heading,
+  intro,
+  headingLevel = 'h2',
+  narrow = false,
+  flush = false,
+} = Astro.props;
+
+const HeadingTag = headingLevel;
+const labelId = anchor ? `${anchor}-heading` : undefined;
+---
+
+<section
+  class:list={['section', flush && 'section--flush']}
+  data-theme={theme === 'white' ? undefined : theme}
+  id={anchor}
+  aria-labelledby={heading ? labelId : undefined}
+>
+  <div class:list={['wrap', narrow && 'wrap--narrow']}>
+    {
+      (heading || intro) && (
+        <header class="section__head stack" style="--flow: var(--s-4)">
+          {heading && (
+            <HeadingTag
+              id={labelId}
+              class={headingLevel === 'h2' ? 'title-lg' : 'title-md'}
+            >
+              {heading}
+            </HeadingTag>
+          )}
+          {intro && <p class="lead" set:html={inline(intro)} />}
+        </header>
+      )
+    }
+    <slot />
+  </div>
+</section>
+
+<style>
+  .section--flush {
+    padding-block-start: 0;
+  }
+
+  .section__head {
+    max-width: var(--measure);
+  }
+
+  .section__head:not(:last-child) {
+    margin-block-end: var(--s-7);
+  }
+</style>

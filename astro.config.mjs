@@ -112,22 +112,26 @@ export default defineConfig({
   integrations: [mdx(), ...keystaticIntegrations],
   fonts: [
     {
-      // Body face carried over from the current site.
+      // Body face, matching the live site. Weight 300 is the default body
+      // weight; 400 is the meta weight; 500 and 800 are the secondary and
+      // primary button weights. See docs/design-rules.md §4.
       provider: fontProviders.google(),
       name: 'Poppins',
       cssVariable: '--font-body',
-      weights: [400, 500, 600],
+      weights: [300, 400, 500, 800],
       styles: ['normal'],
       subsets: ['latin', 'latin-ext'],
       fallbacks: ['Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
     },
     {
-      // Stand-in for the current site's headline face (Adobe "acumin-pro",
-      // which is licensed per-domain and cannot be self-hosted here).
+      // Stand-in for the live site's headline face, Adobe "acumin-pro", which
+      // is licensed per-domain and cannot be self-hosted here. Inter is the
+      // closest freely-available neo-grotesque. To switch to the real face,
+      // replace this entry only — everything else reads --font-heading.
       provider: fontProviders.google(),
-      name: 'Archivo',
+      name: 'Inter',
       cssVariable: '--font-heading',
-      weights: [500, 600, 700],
+      weights: [500],
       styles: ['normal'],
       subsets: ['latin', 'latin-ext'],
       fallbacks: ['Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],

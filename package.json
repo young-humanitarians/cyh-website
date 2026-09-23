@@ -21,15 +21,21 @@
     "@astrojs/react": "^6.0.5",
     "@keystatic/astro": "^6.0.0",
     "@keystatic/core": "^0.6.9",
+    "@panzoom/panzoom": "^4.6.2",
     "astro": "^7.2.10",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/d3-geo": "^3.1.1",
     "@types/node": "^26.4.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
-    "typescript": "^6.0.3"
+    "@types/topojson-client": "^3.1.5",
+    "d3-geo": "^3.1.1",
+    "topojson-client": "^3.1.0",
+    "typescript": "^6.0.3",
+    "world-atlas": "^2.0.2"
   }
 }

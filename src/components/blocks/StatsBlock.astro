@@ -1,0 +1,61 @@
+---
+import Section from '~/components/Section.astro';
+import Placeholder from '~/components/Placeholder.astro';
+import ActionRow from '~/components/ActionRow.astro';
+import { inline } from '~/lib/inline';
+import type { Block } from '~/lib/blocks';
+
+interface Props {
+  block: Block<'stats'>;
+}
+
+const { block } = Astro.props;
+const { items, actions, placeholder, ...section } = block;
+---
+
+<Section {...section}>
+  {items.length === 0 && placeholder && <Placeholder text={placeholder} />}
+  {
+    items.length > 0 && (
+      <dl class="stats">
+        {items.map((item) => (
+          <div class="stats__item">
+            <dt class="stats__value">{item.value}</dt>
+            <dd class="stats__label" set:html={inline(item.label)} />
+          </div>
+        ))}
+      </dl>
+    )
+  }
+  <ActionRow actions={actions} />
+</Section>
+
+<style>
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: var(--s-6) var(--s-5);
+    margin: 0;
+  }
+
+  .stats__item {
+    padding-block-start: var(--s-4);
+    border-block-start: 2px solid var(--c-accent);
+  }
+
+  .stats__value {
+    font-family: var(--f-heading);
+    font-size: var(--t-h2);
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .stats__label {
+    margin: var(--s-2) 0 0;
+    font-size: var(--t-sm);
+  }
+
+  .stats + :global(.button-row) {
+    margin-block-start: var(--s-7);
+  }
+</style>

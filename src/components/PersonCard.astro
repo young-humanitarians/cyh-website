@@ -6,13 +6,14 @@ interface Props {
   name: string;
   role: string;
   credentials?: string | undefined;
+  note?: string | undefined;
   quote?: string | undefined;
   photo?: ImageMetadata | undefined;
   /** h3 under a department heading, h2 when the list has none. */
   headingLevel?: 'h2' | 'h3';
 }
 
-const { name, role, credentials, quote, photo, headingLevel = 'h3' } = Astro.props;
+const { name, role, credentials, note, quote, photo, headingLevel = 'h3' } = Astro.props;
 const Heading = headingLevel;
 ---
 
@@ -35,6 +36,7 @@ const Heading = headingLevel;
     <Heading class="person__name title-sm">{name}</Heading>
     <p class="person__role">{role}</p>
     {credentials && <p class="person__credentials">{credentials}</p>}
+    {note && <p class="person__note">{note}</p>}
     {
       quote && (
         <blockquote class="person__quote">
@@ -58,7 +60,7 @@ const Heading = headingLevel;
     place-items: center;
     aspect-ratio: 1;
     overflow: hidden;
-    background: var(--c-paper-sunk);
+    border: 1px solid var(--c-rule);
     border-radius: var(--radius);
   }
 
@@ -70,33 +72,29 @@ const Heading = headingLevel;
 
   .person__monogram {
     font-family: var(--f-heading);
-    font-size: var(--t-2xl);
-    font-weight: 600;
-    color: var(--c-ink-mute);
+    font-size: var(--t-h2);
+    font-weight: 500;
+    color: var(--c-accent);
   }
 
   .person__text > * + * {
     margin-block-start: var(--s-2);
   }
 
+  /* Sentence case, no tracking — docs/design-rules.md §4. */
   .person__role {
-    font-family: var(--f-heading);
-    font-size: var(--t-xs);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--c-red);
+    font-size: var(--t-sm);
+    color: var(--c-accent);
   }
 
-  .person__credentials {
+  .person__credentials,
+  .person__note {
     font-size: var(--t-sm);
-    color: var(--c-ink-soft);
   }
 
   .person__quote {
     padding-inline-start: var(--s-3);
-    border-inline-start: 2px solid var(--c-rule);
+    border-inline-start: 2px solid var(--c-accent);
     font-size: var(--t-sm);
-    color: var(--c-ink-soft);
   }
 </style>

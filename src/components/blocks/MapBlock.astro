@@ -1,0 +1,163 @@
+---
+import Section from '~/components/Section.astro';
+import Placeholder from '~/components/Placeholder.astro';
+import { inline } from '~/lib/inline';
+import { getMemberCountries } from '~/lib/blocks';
+import { buildWorldMap } from '~/lib/worldmap';
+import { getSiteSettings } from '~/lib/site';
+import type { Block } from '~/lib/blocks';
+
+/**
+ * Countries CYH members come from, filled in the CYH red.
+ *
+ * The projection is computed at build time (src/lib/worldmap.ts), so the page
+ * ships one inert <svg> and no mapping library. The same data is repeated as
+ * a real list underneath: an SVG of 170 paths tells a screen reader nothing,
+ * and the list is the more useful artefact for most readers anyway.
+ */
+interface Props {
+  block: Block<'map'>;
+}
+
+const { block } = Astro.props;
+const { note, stats, placeholder, ...section } = block;
+
+const countries = await getMemberCountries();
+const map = buildWorldMap(countries);
+const settings = await getSiteSettings();
+
+if (map.unknown.length > 0) {
+  // Loud, because a typo silently removes a country from the map.
+  console.warn(
+    `[map] Unknown country name(s) in src/content/team: ${map.unknown.join(', ')}.\n` +
+      '       Names must match src/lib/countries.ts exactly.',
+  );
+}
+
+const label = `${settings.ui.mapCountries}: ${countries.join(', ')}`;
+---
+
+<Section {...section}>
+  {countries.length === 0 && placeholder && <Placeholder text={placeholder} />}
+  <div class="map">
+    <svg
+      class="map__svg"
+      viewBox={`0 0 ${map.width} ${map.height}`}
+      role="img"
+      aria-label={label}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {
+        map.shapes.map((shape) => (
+          <path
+            d={shape.d}
+            class:list={['map__country', shape.highlighted && 'map__country--on']}
+          />
+        ))
+      }
+    </svg>
+
+    {
+      stats.length > 0 && (
+        <dl class="map__stats">
+          {stats.map((stat) => (
+            <div>
+              <dt>{stat.value}</dt>
+              <dd set:html={inline(stat.label)} />
+            </div>
+          ))}
+        </dl>
+      )
+    }
+  </div>
+
+  {
+    countries.length > 0 && (
+      <details class="map__list">
+        <summary>
+          {settings.ui.mapCountries} ({countries.length})
+        </summary>
+        <ul>
+          {countries.map((country) => (
+            <li>{country}</li>
+          ))}
+        </ul>
+      </details>
+    )
+  }
+
+  {note && <p class="map__note" set:html={inline(note)} />}
+</Section>
+
+<style>
+  .map {
+    display: grid;
+    gap: var(--s-7);
+  }
+
+  @media (min-width: 62rem) {
+    .map {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+      align-items: center;
+    }
+  }
+
+  .map__svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .map__country {
+    fill: var(--c-bg);
+    stroke: var(--c-fg);
+    stroke-width: 0.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .map__country--on {
+    fill: var(--c-red);
+    stroke: var(--c-red);
+  }
+
+  .map__stats {
+    display: grid;
+    gap: var(--s-5);
+    margin: 0;
+  }
+
+  .map__stats dt {
+    font-family: var(--f-heading);
+    font-size: var(--t-h3);
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .map__stats dd {
+    margin: var(--s-1) 0 0;
+    font-size: var(--t-sm);
+  }
+
+  .map__list {
+    margin-block-start: var(--s-6);
+    font-size: var(--t-sm);
+  }
+
+  .map__list summary {
+    cursor: pointer;
+  }
+
+  .map__list ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2) var(--s-5);
+    margin-block-start: var(--s-3);
+    padding: 0;
+    list-style: none;
+  }
+
+  .map__note {
+    margin-block-start: var(--s-5);
+    max-width: var(--measure);
+    font-size: var(--t-sm);
+  }
+</style>

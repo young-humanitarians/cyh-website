@@ -1,0 +1,334 @@
+---
+import Section from '~/components/Section.astro';
+import Placeholder from '~/components/Placeholder.astro';
+import ActionRow from '~/components/ActionRow.astro';
+import { inline } from '~/lib/inline';
+import { href as withBase, isExternal } from '~/lib/urls';
+import type { Block } from '~/lib/blocks';
+
+/**
+ * One component, five presentations — the draft asks for flashcards, circular
+ * "bubbles", layered circles and numbered steps, all of which are the same
+ * title/text pair with different chrome. Keeping them together means one set
+ * of accessibility decisions rather than five.
+ */
+interface Props {
+  block: Block<'cards'>;
+  /** Cards sit under a page h1 or a section h2; this keeps the outline sane. */
+  headingLevel?: 'h3' | 'h4';
+}
+
+const { block, headingLevel = 'h3' } = Astro.props;
+const { variant, items, actions, placeholder, ...section } = block;
+const Title = headingLevel;
+
+const ListTag = variant === 'numbered' ? 'ol' : 'ul';
+---
+
+<Section {...section}>
+  {items.length === 0 && placeholder && <Placeholder text={placeholder} />}
+  <ListTag class:list={['cards', `cards--${variant}`]}>
+    {
+      items.map((item) => (
+        <li class="cards__item">
+          {variant === 'flip' ? (
+            <a
+              class="flip"
+              href={withBase(item.href ?? '#')}
+              {...(item.href && isExternal(item.href)
+                ? { target: '_blank', rel: 'noopener' }
+                : {})}
+            >
+              <span class="flip__inner">
+                <span class="flip__face flip__face--front">
+                  <Title class="cards__title title-sm">{item.title}</Title>
+                  {item.subtitle && <span class="cards__subtitle">{item.subtitle}</span>}
+                  {item.text && <span class="cards__text" set:html={inline(item.text)} />}
+                </span>
+                <span class="flip__face flip__face--back">
+                  <span class="cards__text" set:html={inline(item.back ?? item.text ?? '')} />
+                </span>
+              </span>
+            </a>
+          ) : variant === 'layers' ? (
+            <details class="layer">
+              <summary class="layer__summary">
+                <Title class="cards__title title-sm">{item.title}</Title>
+                {item.subtitle && <span class="cards__subtitle">{item.subtitle}</span>}
+              </summary>
+              {item.text && <p class="cards__text" set:html={inline(item.text)} />}
+            </details>
+          ) : (
+            <div class="cards__body">
+              <Title class="cards__title title-sm">
+                {item.href ? (
+                  <a
+                    href={withBase(item.href)}
+                    {...(isExternal(item.href) ? { target: '_blank', rel: 'noopener' } : {})}
+                  >
+                    {item.title}
+                  </a>
+                ) : (
+                  item.title
+                )}
+              </Title>
+              {item.subtitle && <p class="cards__subtitle">{item.subtitle}</p>}
+              {item.text && <p class="cards__text" set:html={inline(item.text)} />}
+            </div>
+          )}
+        </li>
+      ))
+    }
+  </ListTag>
+  <ActionRow actions={actions} />
+</Section>
+
+<style>
+  .cards {
+    display: grid;
+    gap: var(--s-6);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .cards + :global(.button-row) {
+    margin-block-start: var(--s-7);
+  }
+
+  .cards__title {
+    margin: 0;
+  }
+
+  .cards__title a {
+    text-decoration: none;
+  }
+
+  .cards__title a:hover {
+    text-decoration: underline;
+  }
+
+  .cards__subtitle {
+    display: block;
+    font-size: var(--t-sm);
+    color: var(--c-accent);
+  }
+
+  .cards__text {
+    display: block;
+  }
+
+  .cards :global(a) {
+    color: inherit;
+  }
+
+  /* -- plain -- */
+
+  .cards--plain .cards__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    height: 100%;
+    padding: var(--s-5);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+  }
+
+  /* -- numbered -- */
+
+  .cards--numbered {
+    counter-reset: step;
+  }
+
+  .cards--numbered .cards__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    height: 100%;
+    padding-block-start: var(--s-4);
+    border-block-start: 2px solid var(--c-accent);
+  }
+
+  .cards--numbered .cards__body::before {
+    counter-increment: step;
+    content: counter(step);
+    font-family: var(--f-heading);
+    font-size: var(--t-h3);
+    font-weight: 500;
+    line-height: 1;
+    color: var(--c-accent);
+  }
+
+  /* -- bubbles -- */
+
+  .cards--bubbles {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--s-7);
+  }
+
+  .cards--bubbles .cards__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s-3);
+    aspect-ratio: 1;
+    padding: clamp(var(--s-5), 4vw, var(--s-8));
+    text-align: center;
+    border: 2px solid var(--c-accent);
+    border-radius: 50%;
+  }
+
+  .cards--bubbles .cards__text {
+    font-size: var(--t-sm);
+  }
+
+  /* Circles stop being readable once the text is long; go rectangular. */
+  @media (max-width: 30rem) {
+    .cards--bubbles .cards__body {
+      aspect-ratio: auto;
+      border-radius: var(--radius);
+      text-align: start;
+    }
+  }
+
+  /* -- layers -- */
+
+  .cards--layers {
+    grid-template-columns: 1fr;
+    gap: 0;
+    max-width: var(--measure);
+  }
+
+  .layer {
+    padding: var(--s-5);
+    border: 1px solid var(--c-rule);
+  }
+
+  .cards--layers .cards__item:first-child .layer {
+    border-start-start-radius: var(--radius);
+    border-start-end-radius: var(--radius);
+  }
+
+  .cards--layers .cards__item + .cards__item .layer {
+    border-block-start: 0;
+  }
+
+  .cards--layers .cards__item:last-child .layer {
+    border-end-start-radius: var(--radius);
+    border-end-end-radius: var(--radius);
+  }
+
+  /* Each layer sits one step further in, so the nesting is visible. */
+  .cards--layers .cards__item:nth-child(2) .layer {
+    padding-inline-start: calc(var(--s-5) + var(--s-6));
+  }
+
+  .cards--layers .cards__item:nth-child(n + 3) .layer {
+    padding-inline-start: calc(var(--s-5) + var(--s-6) * 2);
+  }
+
+  .layer__summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-2) var(--s-4);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .layer__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .layer__summary::after {
+    content: '+';
+    margin-inline-start: auto;
+    font-family: var(--f-heading);
+    font-size: var(--t-h4);
+    line-height: 1;
+  }
+
+  .layer[open] .layer__summary::after {
+    content: '−';
+  }
+
+  .layer .cards__text {
+    margin-block-start: var(--s-3);
+  }
+
+  /* -- flip -- */
+
+  .cards--flip .cards__item {
+    /* The card needs an intrinsic height; both faces are absolutely placed. */
+    min-height: 16rem;
+  }
+
+  .flip {
+    display: block;
+    height: 100%;
+    perspective: 1200px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .flip__inner {
+    position: relative;
+    display: block;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 350ms ease;
+  }
+
+  .flip:hover .flip__inner,
+  .flip:focus-visible .flip__inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip__face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--s-3);
+    padding: var(--s-5);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    backface-visibility: hidden;
+  }
+
+  .flip__face--back {
+    transform: rotateY(180deg);
+    background: var(--c-accent);
+    color: var(--c-bg);
+    border-color: var(--c-accent);
+  }
+
+  /*
+   * With reduced motion the card must still reveal its back, so swap the
+   * faces outright instead of rotating. global.css already zeroes the
+   * transition duration; this removes the rotation as well.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .flip:hover .flip__inner,
+    .flip:focus-visible .flip__inner {
+      transform: none;
+    }
+
+    .flip:hover .flip__face--front,
+    .flip:focus-visible .flip__face--front {
+      visibility: hidden;
+    }
+
+    .flip__face--back {
+      transform: none;
+      visibility: hidden;
+    }
+
+    .flip:hover .flip__face--back,
+    .flip:focus-visible .flip__face--back {
+      visibility: visible;
+    }
+  }
+</style>
