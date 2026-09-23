@@ -60,5 +60,16 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     </main>
 
     <Footer settings={settings} />
+
+    <script>
+      // Glossary bubbles open on hover and on focus through CSS alone. This
+      // adds the one thing CSS cannot: Escape to dismiss, which WCAG 1.4.13
+      // requires of content shown on hover or focus.
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+        const open = document.activeElement;
+        if (open instanceof HTMLElement && open.closest('.term')) open.blur();
+      });
+    </script>
   </body>
 </html>

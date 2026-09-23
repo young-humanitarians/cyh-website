@@ -4,10 +4,13 @@ import { inline } from '~/lib/inline';
 import type { Block } from '~/lib/blocks';
 
 /**
- * The draft asks for terms like "Zuversicht" and "humanitarian culture" to pop
- * up when clicked. A native <details> gives exactly that: it toggles without
- * JavaScript, it is keyboard-operable, and screen readers announce its
- * expanded state — none of which a hand-rolled tooltip would.
+ * A term that earns a section of its own — one with a heading and a definition
+ * too long to hover over. A native <details> toggles without JavaScript, is
+ * keyboard-operable, and has its expanded state announced.
+ *
+ * Short terms met in passing are not this: they are marked in running text as
+ * `[Zuversicht](term:zuversicht)` and open a bubble over the sentence. See
+ * src/lib/inline.ts and the `.term` rules in global.css.
  */
 interface Props {
   block: Block<'explainer'>;

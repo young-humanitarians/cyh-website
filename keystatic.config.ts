@@ -353,6 +353,38 @@ export default config({
     },
   },
   collections: {
+    glossary: collection({
+      label: 'Glossary',
+      slugField: 'term',
+      path: 'src/content/glossary/*',
+      format: { data: 'yaml' },
+      columns: ['term'],
+      schema: {
+        term: fields.slug({
+          name: {
+            label: 'Term',
+            description: 'The word as it appears in the bubble heading.',
+          },
+          slug: {
+            label: 'Reference',
+            description:
+              'What you write in the text. Mark a word as [Zuversicht](term:zuversicht) and it opens this definition on hover.',
+          },
+        }),
+        summary: fields.text({
+          label: 'One-line summary',
+          description: 'Optional. Sits under the term, in italics.',
+        }),
+        body: fields.array(
+          fields.text({ label: 'Paragraph', multiline: true }),
+          {
+            label: 'Definition',
+            description: 'Keep it short — this has to fit in a bubble over the text.',
+            itemLabel: (item) => item.value.slice(0, 60),
+          },
+        ),
+      },
+    }),
     pages: collection({
       label: 'Pages',
       slugField: 'title',

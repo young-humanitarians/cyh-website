@@ -306,6 +306,102 @@ hr {
   margin-inline: auto;
 }
 
+/* -------------------------------------------------- glossary term bubbles */
+
+/*
+ * A word in running text that carries its definition, marked up in content as
+ * `[Zuversicht](term:zuversicht)`. Styles live here rather than in a component
+ * because the markup is injected with `set:html` from src/lib/inline.ts, which
+ * Astro does not add scope attributes to.
+ *
+ * The bubble opens on hover and on `:focus-within`, which covers the keyboard
+ * (tab to the button) and touch (tapping a button focuses it). Neither needs
+ * JavaScript; the script in BaseLayout only adds Escape to dismiss, which
+ * WCAG 1.4.13 asks for of anything shown on hover or focus.
+ */
+.term {
+  position: relative;
+}
+
+/* A button reset — inside a sentence this has to read as a word, not a control. */
+.term__word {
+  font: inherit;
+  font-weight: 700;
+  color: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-decoration: underline;
+  text-decoration-color: var(--c-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+  cursor: help;
+}
+
+.term__word:hover,
+.term:focus-within .term__word {
+  color: var(--c-accent);
+}
+
+.term__bubble {
+  position: absolute;
+  inset-block-end: 100%;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  z-index: 30;
+  /*
+   * Deliberately no gap above the word: the pointer has to reach the bubble
+   * without crossing dead space, or the hover is lost on the way (WCAG
+   * 1.4.13 again, which asks for hoverable as well as dismissible).
+   */
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 2 * var(--gutter)));
+  padding: var(--s-4);
+  background: var(--c-bg);
+  color: var(--c-fg);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--radius);
+  text-align: start;
+  font-family: var(--f-body);
+  font-size: var(--t-sm);
+  font-weight: 300;
+  line-height: var(--lh-body);
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 100ms ease,
+    visibility 100ms ease;
+}
+
+.term:hover .term__bubble,
+.term:focus-within .term__bubble {
+  visibility: visible;
+  opacity: 1;
+}
+
+.term__title {
+  display: block;
+  font-family: var(--f-heading);
+  font-size: var(--t-base);
+  font-weight: 500;
+  color: var(--c-accent);
+}
+
+.term__summary {
+  display: block;
+  font-style: italic;
+}
+
+.term__para {
+  display: block;
+}
+
+.term__title + *,
+.term__summary + *,
+.term__para + * {
+  margin-block-start: var(--s-2);
+}
+
 /*
  * Body copy rendered from MDX. Runs the full width of its container rather
  * than sitting in a reading column, so it lines up with the headings around

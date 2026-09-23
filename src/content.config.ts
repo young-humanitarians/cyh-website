@@ -566,6 +566,23 @@ const summits = defineCollection({
 });
 
 /** Navigation, footer and the German interface strings. */
+/**
+ * Terms the site explains in place: an editor marks a word in running text as
+ * `[Zuversicht](term:zuversicht)` and it becomes a hover-and-focus bubble
+ * carrying the definition. Entries are shared, so a term defined once can be
+ * marked on any page. See src/lib/inline.ts.
+ */
+const glossary = defineCollection({
+  loader: glob({ base: './src/content/glossary', pattern: '**/*.yaml' }),
+  schema: z.object({
+    term: z.string(),
+    /** One line under the term, e.g. "A German word English does not have." */
+    summary: optionalText,
+    /** The definition itself. Inline markdown only; this sits in a bubble. */
+    body: z.array(z.string()).default([]),
+  }),
+});
+
 const settings = defineCollection({
   loader: glob({ base: './src/content/settings', pattern: '**/*.yaml' }),
   schema: z.object({
@@ -629,6 +646,7 @@ const settings = defineCollection({
 
 export const collections = {
   pages,
+  glossary,
   news,
   events,
   team,

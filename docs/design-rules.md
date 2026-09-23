@@ -353,6 +353,11 @@ Non-negotiable, and mostly independent of the visual spec:
   navigation must open on focus, not hover alone.
 - Respect the contrast table in §2. Black on red is forbidden.
 - Skip link to `#main` stays.
+- **Glossary bubbles** (`[term](term:slug)` in content) open on hover *and* on
+  keyboard focus *and* on tap, because hover alone would put the definition
+  out of reach of keyboard and touch users. They sit flush against the word so
+  the pointer can reach them, and Escape dismisses them — hoverable,
+  dismissible and persistent, per WCAG 1.4.13.
 - UI strings stay centralised in `src/content/settings/site.yaml` so the site
   can be translated (German first, per `CLAUDE.md`).
 
