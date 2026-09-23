@@ -178,20 +178,15 @@ const tickerText = ticker?.text;
   }
 
   /*
-   * The ticker is an <a> inside the header and paints its own white-on-red,
-   * but this rule is more specific than the component's own, so without the
-   * exclusion it repainted the strip's text dark red — red on red.
+   * Both exclusions are there because this selector outranks the rules those
+   * elements set for themselves, and both would otherwise end up dark red on
+   * a red background. The ticker paints its own white-on-red. Buttons take
+   * their colour from --c-btn-fg, and `:not()` carries the specificity of its
+   * argument, so a bare `:not(.ticker)` here scored higher than the .button
+   * rule below and won.
    */
-  .page-header :global(a:not(.ticker)) {
+  .page-header :global(a:not(.ticker, .button)) {
     color: var(--c-link);
   }
 
-  .page-header :global(.button) {
-    color: var(--c-btn-fg);
-  }
-
-  .page-header :global(.button--secondary),
-  .page-header :global(.button--tertiary) {
-    color: var(--c-fg);
-  }
 </style>

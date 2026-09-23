@@ -31,15 +31,13 @@ const { body, actions, ...section } = block;
     margin-block-start: var(--s-5);
   }
 
-  .cta :global(a) {
+  /*
+   * Buttons excluded so the global .button rules — including their :hover
+   * colours — survive. Naming them here instead would outrank `:hover`, which
+   * only scores (0,2,0), and freeze the text colour while the background
+   * inverted underneath it.
+   */
+  .cta :global(a:not(.button)) {
     color: var(--c-link);
-  }
-
-  .cta :global(.button) {
-    color: var(--c-btn-fg);
-  }
-
-  .cta :global(.button--secondary) {
-    color: var(--c-fg);
   }
 </style>

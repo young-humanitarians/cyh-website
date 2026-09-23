@@ -90,7 +90,12 @@ const { variant, body, items, actions, ...section } = block;
     margin-block-start: var(--s-3);
   }
 
-  .text :global(a) {
+  /*
+   * Buttons excluded: this selector outranks the global .button rule, so
+   * without it a primary button in a text block took --c-link and rendered
+   * dark red on its red background, underlined.
+   */
+  .text :global(a:not(.button)) {
     color: var(--c-link);
     text-decoration: underline;
   }

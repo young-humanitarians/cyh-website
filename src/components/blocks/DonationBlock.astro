@@ -88,13 +88,13 @@ const { methods, placeholder, ...section } = block;
     margin: 0;
   }
 
-  .donation__item :global(a) {
+  .donation__item :global(a:not(.button)) {
     color: var(--c-link);
   }
 
+  /* Layout only — the colour comes from the global button rules, so hover works. */
   .donation__item .button:where(:any-link) {
     align-self: flex-start;
     margin-block-start: auto;
-    color: var(--c-fg);
   }
 </style>
