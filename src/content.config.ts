@@ -319,7 +319,35 @@ const pages = defineCollection({
           image: image().optional(),
           /** Required whenever an image is set; describes it for screen readers. */
           imageAlt: optionalText,
+          /**
+           * Which part of the hero image stays visible. The banner is a slim
+           * band across a tall photo, so most of the frame is cropped away;
+           * this says what the band should be centred on. See PageHeader.astro.
+           */
+          focus: z
+            .enum([
+              'top',
+              'upper',
+              'upper-middle',
+              'middle',
+              'lower-middle',
+              'lower',
+              'bottom',
+            ])
+            .default('middle'),
           actions: z.array(action).default([]),
+          /**
+           * Optional attention strip laid across the hero image, repeating
+           * its text as it scrolls. See docs/design-rules.md §10 — this is a
+           * recorded exception to the no-marquee rule, carried over from the
+           * live site. Leave `text` empty and no strip is rendered.
+           */
+          ticker: z
+            .object({
+              text: optionalText,
+              href: optionalText,
+            })
+            .optional(),
           theme,
         })
         .optional(),

@@ -29,21 +29,33 @@ const { variant, body, items, actions, ...section } = block;
 </Section>
 
 <style>
+  /*
+   * The measure is applied once, to the column, rather than to each paragraph
+   * in turn. Capping the children instead left the buttons underneath running
+   * the full width of the section while the copy above them stopped short, so
+   * their left edges did not line up; and a left-aligned column inside a
+   * centred section throws all its leftover space to the right.
+   */
+  .text {
+    max-width: var(--measure);
+    margin-inline: auto;
+  }
+
   .text > * + * {
     margin-block-start: var(--s-5);
   }
 
-  .text p {
-    max-width: var(--measure);
-  }
-
-  /* A single sentence carrying its own weight — the draft's bold one-liners. */
+  /*
+   * A single sentence carrying its own weight — the draft's bold one-liners.
+   * No cap of its own: at 24ch this wrapped onto four lines of display type
+   * and ate the height of a small section. It takes the same reading column
+   * as everything else, which puts it on one or two lines.
+   */
   .text--statement p {
     font-family: var(--f-heading);
     font-size: var(--t-h3);
     font-weight: 500;
     line-height: var(--lh-heading);
-    max-width: 24ch;
     text-wrap: balance;
   }
 
@@ -54,6 +66,8 @@ const { variant, body, items, actions, ...section } = block;
   /* Two columns of running copy on wide screens, one on narrow. */
   @media (min-width: 60rem) {
     .text--columns {
+      /* The pair of columns is the measure here, so the cap comes off. */
+      max-width: none;
       columns: 2;
       column-gap: var(--s-9);
     }
@@ -70,7 +84,6 @@ const { variant, body, items, actions, ...section } = block;
 
   .text__list {
     padding-inline-start: 1.35em;
-    max-width: var(--measure);
   }
 
   .text__list li + li {

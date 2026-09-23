@@ -65,9 +65,12 @@ const labelId = anchor ? `${anchor}-heading` : undefined;
     padding-block-start: 0;
   }
 
-  .section__head {
-    max-width: var(--measure);
-  }
+  /*
+   * No width cap: section headings run the full width of their section and
+   * sit flush left, matching the page title. The intro paragraph inside keeps
+   * the reading measure (global .lead), also flush left, so the two share an
+   * edge.
+   */
 
   .section__head:not(:last-child) {
     margin-block-end: var(--s-7);

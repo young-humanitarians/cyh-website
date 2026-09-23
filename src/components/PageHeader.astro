@@ -2,8 +2,24 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import ActionRow from '~/components/ActionRow.astro';
+import HeroTicker from '~/components/HeroTicker.astro';
 import { inline } from '~/lib/inline';
 import type { Action } from '~/lib/blocks';
+
+/**
+ * Every page opens the same way: a full-bleed photo band where there is a
+ * hero image, then the title running the full page width beneath it
+ * (design-rules §9, "The home page carries a full-bleed hero image" — the
+ * 2026 revamp applies that shape to every page).
+ */
+type Focus =
+  | 'top'
+  | 'upper'
+  | 'upper-middle'
+  | 'middle'
+  | 'lower-middle'
+  | 'lower'
+  | 'bottom';
 
 interface Props {
   title: string;
@@ -12,7 +28,11 @@ interface Props {
   lead?: string | undefined;
   image?: ImageMetadata | undefined;
   imageAlt?: string | undefined;
+  /** Which part of the photo the banner is centred on. */
+  focus?: Focus;
   actions?: readonly Action[] | readonly { label: string; href: string }[];
+  /** Scrolling call-to-action strip; see HeroTicker.astro. */
+  ticker?: { text?: string | undefined; href?: string | undefined } | undefined;
   theme?: 'white' | 'black' | 'bright';
 }
 
@@ -23,37 +43,58 @@ const {
   lead,
   image,
   imageAlt,
+  focus = 'middle',
   actions = [],
+  ticker,
   theme = 'white',
 } = Astro.props;
+
+/**
+ * Where in the photo, top to bottom, the band should be centred. Positions in
+ * the frame rather than an even ramp: the steps are placed where the hero
+ * photographs actually put their subject — a sign held overhead sits near 30%,
+ * one held at chest height near 50%, one held low near 62%.
+ */
+const FOCUS_POSITION: Record<Focus, number> = {
+  top: 10,
+  upper: 30,
+  'upper-middle': 40,
+  middle: 50,
+  'lower-middle': 62,
+  lower: 75,
+  bottom: 90,
+};
+
+const tickerText = ticker?.text;
 ---
 
 <div
-  class:list={['page-header', image && 'page-header--split']}
+  class:list={['page-header', image && 'page-header--banner']}
   data-theme={theme === 'white' ? undefined : theme}
 >
-  <div class="wrap page-header__inner">
-    <div class="stack" style="--flow: var(--s-5)">
-      {eyebrow && <p class="eyebrow">{eyebrow}</p>}
-      <h1 class="title-xl">{heading ?? title}</h1>
-      {lead && <p class="lead" set:html={inline(lead)} />}
-      <ActionRow actions={actions} />
-    </div>
+  {
+    image && (
+      <figure class="page-header__banner" style={`--hero-focus: ${FOCUS_POSITION[focus]}%`}>
+        <Image
+          src={image}
+          alt={imageAlt ?? ''}
+          widths={[640, 1000]}
+          sizes="100vw"
+          loading="eager"
+        />
+        {tickerText && <HeroTicker text={tickerText} href={ticker?.href} overlay />}
+      </figure>
+    )
+  }
 
-    {
-      image && (
-        <figure class="page-header__figure">
-          <Image
-            src={image}
-            alt={imageAlt ?? ''}
-            widths={[480, 960]}
-            sizes="(min-width: 60rem) 32rem, 90vw"
-            loading="eager"
-          />
-        </figure>
-      )
-    }
+  <div class="wrap stack" style="--flow: var(--s-5)">
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h1 class="title-xl">{heading ?? title}</h1>
+    {lead && <p class="lead" set:html={inline(lead)} />}
+    <ActionRow actions={actions} />
   </div>
+
+  {!image && tickerText && <HeroTicker text={tickerText} href={ticker?.href} />}
 </div>
 
 <style>
@@ -63,36 +104,85 @@ const {
     color: var(--c-fg);
   }
 
-  .page-header__inner {
-    display: grid;
-    gap: var(--s-7);
+  /* With a banner, the photo is the first thing on the page. */
+  .page-header--banner {
+    padding-block-start: 0;
   }
 
-  @media (min-width: 60rem) {
-    .page-header--split .page-header__inner {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 32rem);
-      align-items: center;
+  /*
+   * Without a hero image the strip has no photo to sit on, so it becomes the
+   * bottom edge of the header — the negative margin cancels the header's own
+   * bottom padding so the band runs flush into whatever follows.
+   */
+  .page-header > :global(.ticker) {
+    margin-block: var(--s-8) calc(var(--s-8) * -1);
+  }
+
+  /*
+   * A direct child of .page-header, which carries no inline padding, so it
+   * reaches both window edges. Square corners: design-rules §9 forbids
+   * rounding photos, and a full-bleed image has no edge to round anyway.
+   */
+  .page-header__banner {
+    position: relative;
+    margin: 0 0 var(--s-8);
+    overflow: hidden;
+  }
+
+  .page-header__banner :global(img) {
+    display: block;
+    width: 100%;
+    height: clamp(14rem, 30vh, 22rem);
+    object-fit: cover;
+    object-position: center calc(1.762 * var(--hero-focus) - 38.1%);
+  }
+
+  /*
+   * --hero-focus says which point of the photo should sit at the middle of
+   * the band; the three expressions convert that into the `object-position`
+   * that puts it there.
+   *
+   * They differ because the band's height barely changes with the window
+   * while its width changes a lot, so the share of the photo on show swings
+   * from about 43% on a phone to 9% on a wide monitor. With `cover`, the
+   * point visible at the centre of the box is `r/2 + p(1 - r)` of the image,
+   * where r is that share and p is `object-position`. Solving for p at each
+   * breakpoint's r gives the coefficients below. Without this, a focal point
+   * chosen on a laptop would drift to a different part of the photo on a
+   * phone — which is what keeps the home page's ticker off the two lines of
+   * the cardboard sign at every size.
+   *
+   * r is derived assuming the 2:3 portrait photos the hero collection
+   * currently holds. A markedly different aspect ratio would need new
+   * coefficients.
+   */
+  @media (min-width: 48rem) {
+    .page-header__banner :global(img) {
+      object-position: center calc(1.362 * var(--hero-focus) - 18.1%);
     }
   }
 
-  .page-header__figure {
-    margin: 0;
-    overflow: hidden;
-    border-radius: var(--radius);
+  @media (min-width: 62rem) {
+    .page-header__banner :global(img) {
+      object-position: center calc(1.143 * var(--hero-focus) - 7.14%);
+    }
   }
 
-  .page-header__figure :global(img) {
-    width: 100%;
-    height: 100%;
-    max-height: 28rem;
-    object-fit: cover;
-  }
-
+  /*
+   * Deliberately not centred, unlike the reading columns further down the
+   * page: the h1 above it runs the full page width and is flush left, so a
+   * centred lead would start somewhere in the middle of its own title.
+   */
   .page-header .lead {
     max-width: var(--measure);
   }
 
-  .page-header :global(a) {
+  /*
+   * The ticker is an <a> inside the header and paints its own white-on-red,
+   * but this rule is more specific than the component's own, so without the
+   * exclusion it repainted the strip's text dark red — red on red.
+   */
+  .page-header :global(a:not(.ticker)) {
     color: var(--c-link);
   }
 

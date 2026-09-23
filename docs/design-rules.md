@@ -192,8 +192,13 @@ Plain-CSS equivalents, accurate to within a pixel of the live site:
 | Mobile breakpoint | `767px` / `768px` |
 
 **Rule:** the site is wide. Content runs to 1800px, not to a 1152px column.
-Long-form prose may still be constrained to a readable measure inside a
-full-width section, but section backgrounds, images and grids go full width.
+Section backgrounds, images and grids go full width.
+
+**Headings run the full width of their section and sit flush left** — the page
+title and every section heading alike, so a page has one left edge from top to
+bottom. Running copy is capped at `--measure` (1200px) and also sits flush
+left, against that same edge. Lists, notes and MDX page bodies are not capped
+at all; they fill their section.
 
 ---
 
@@ -281,7 +286,15 @@ container — plain monochrome glyphs.
 - Images are presented **uncropped and unfiltered** — no duotone, no red
   overlay, no rounded corners on photos.
 - Event thumbnails are **1:1 square**.
-- The home page carries a full-bleed hero image and a multi-image gallery.
+- **Every page opens with a full-bleed hero image** where it has one: a slim
+  band running window edge to window edge, above the page title. The live site
+  does this on the home page only; the 2026 revamp applies the same shape
+  everywhere and drops the side-by-side title-and-photo hero.
+- The band crops a portrait photo hard, so each page names a **focal point**
+  (`hero.focus`) saying what has to survive the crop — usually the cardboard
+  sign. `PageHeader.astro` compensates per breakpoint so the chosen point
+  stays put as the window changes.
+- The home page also carries a multi-image gallery.
 - The logo is the CYH seal (red circle mark). Never recolour it, never place it
   on red.
 - Per `CLAUDE.md`: content images live in `src/assets/` or `public/images/`,
@@ -306,8 +319,20 @@ Rules:
   very short (the site's own animation duration token is `0.1s`, curve `ease`).
 - Keep the `prefers-reduced-motion` block in `global.css` regardless.
 
-**One standing exception.** The 2026 revamp asks for initiative flashcards that
-turn over to reveal their description. That card flip runs at 350ms, longer
+**Two standing exceptions.**
+
+The first is the hero ticker. The live site runs a repeating "Check our
+upcoming events!" strip under its hero, and the revamp keeps it — laid across
+the hero image rather than below it, through the middle of the full-bleed
+banner. It is grandfathered in, not licence for new marquees: it pauses on
+hover and on keyboard focus, it does not move at all under
+`prefers-reduced-motion` (the repeated text simply sits still), the duplicated
+copies are `aria-hidden` so the link announces its text once, and the focus
+ring turns white because the strip is red. The text and its link target are
+editor-controlled, under the page's Hero fields.
+
+The second is the initiative flashcards. The 2026 revamp asks for cards that
+turn over to reveal their description. That flip runs at 350ms, longer
 than the 0.1s above. It is allowed because it is a direct interaction with a
 control the user is pointing at, not an ambient effect — and under
 `prefers-reduced-motion` the faces swap outright instead of rotating. Do not
@@ -337,10 +362,12 @@ Non-negotiable, and mostly independent of the visual spec:
 
 Observed section order, consistent across pages:
 
-- **Home** — hero image + CTA ("Check our upcoming events!") → mission statement
-  → image gallery → ICRC collaboration callout → social feed → newsletter.
-- **Content pages** (`about-us`, `impact`, `get-involved`, `support`) — h1 page
-  title → 2–4 white content sections → one black emphasis band → newsletter.
+- **Home** — hero banner with the events ticker across it → h1 → mission
+  statement → image gallery → ICRC collaboration callout → social feed →
+  newsletter.
+- **Content pages** (`about-us`, `impact`, `get-involved`, `support`) — hero
+  banner where the page has a photo → h1 page title → 2–4 white content
+  sections → one black emphasis band → newsletter.
 - **Summit pages** — content sections → partners/supporters → social → terms →
   newsletter.
 
@@ -368,7 +395,7 @@ what changed and why, so nobody reintroduces them.
 | 9 | Button shape | `border-radius: 999px` | `6.4px` |
 | 10 | Button fill | Ink background, red on hover | Red background, white text |
 | 11 | Button type | `--t-sm`, weight 600, `0.01em` | 1.5 scale, weight 800, `0.1em` |
-| 12 | Page width | `72rem` (1152px) | `1800px`, with a 68ch measure for prose |
+| 12 | Page width | `72rem` (1152px) | `1800px`, with a `75rem` (1200px) centred measure for prose |
 | 13 | Gutter | `clamp(1.25rem, 5vw, 3rem)` | `3vw` / `6vw` mobile |
 | 14 | Uppercase eyebrow | Uppercase, `0.14em` tracked | Sentence case, red, no tracking |
 | 15 | Card meta | Uppercase, `0.08em`, grey | Sentence case, no grey |

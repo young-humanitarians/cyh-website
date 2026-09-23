@@ -60,9 +60,15 @@
 
   /* -- Layout -- */
   --wrap: 1800px;
-  --wrap-narrow: 60rem;
+  --wrap-narrow: 82rem;
   --gutter: 6vw;
-  --measure: 68ch;
+  /*
+   * The reading column. In rem, not ch, so every column comes out the same
+   * width whatever font size sits in it — in `ch` a lead paragraph resolved
+   * to a much wider column than the body copy beside it, because `ch` scales
+   * with the element's own type size.
+   */
+  --measure: 75rem;
   --radius: 6.4px;
 }
 
@@ -270,11 +276,16 @@ hr {
 
 .measure {
   max-width: var(--measure);
+  margin-inline: auto;
 }
 
-/* Body copy rendered from MDX. */
+/*
+ * Body copy rendered from MDX. Runs the full width of its container rather
+ * than sitting in a reading column, so it lines up with the headings around
+ * it. In a card the container is the card, so this only bites on page bodies.
+ */
 .prose {
-  max-width: var(--measure);
+  max-width: none;
 }
 
 .prose > * + * {

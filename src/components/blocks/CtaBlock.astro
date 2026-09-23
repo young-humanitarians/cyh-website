@@ -21,6 +21,12 @@ const { body, actions, ...section } = block;
 </Section>
 
 <style>
+  /* Measure on the column, so the copy and the buttons share a left edge. */
+  .cta {
+    max-width: var(--measure);
+    margin-inline: auto;
+  }
+
   .cta > * + * {
     margin-block-start: var(--s-5);
   }

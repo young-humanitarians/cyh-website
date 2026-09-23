@@ -410,7 +410,39 @@ export default config({
               description: 'Required whenever there is an image.',
               multiline: true,
             }),
+            focus: fields.select({
+              label: 'Focal point',
+              description:
+                'The hero is a slim band across a tall photo. Pick the part that must stay visible — usually the sign, or the face.',
+              options: [
+                { label: 'Top of the photo', value: 'top' },
+                { label: 'Upper', value: 'upper' },
+                { label: 'Upper middle', value: 'upper-middle' },
+                { label: 'Middle', value: 'middle' },
+                { label: 'Lower middle', value: 'lower-middle' },
+                { label: 'Lower', value: 'lower' },
+                { label: 'Bottom of the photo', value: 'bottom' },
+              ],
+              defaultValue: 'middle',
+            }),
             actions: actionArray(),
+            ticker: fields.object(
+              {
+                text: fields.text({
+                  label: 'Text',
+                  description:
+                    'Leave empty for no strip. The text repeats across the image as it scrolls.',
+                }),
+                href: fields.text({
+                  label: 'Link',
+                  description: 'Where the strip leads, e.g. /events.',
+                }),
+              },
+              {
+                label: 'Scrolling strip',
+                description: 'A red strip laid across the hero image.',
+              },
+            ),
             theme: fields.select({
               label: 'Background',
               options: [

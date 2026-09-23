@@ -1,0 +1,108 @@
+---
+import { href as url, isExternal } from '~/lib/urls';
+
+/**
+ * The attention strip the live site runs under its hero: a short call to
+ * action repeating across the full width and sliding sideways.
+ *
+ * docs/design-rules.md §10 bans marquees on new work; this one is a recorded
+ * exception because it is carried over from the live site, not invented here.
+ * It pauses on hover and on keyboard focus, and it does not move at all under
+ * `prefers-reduced-motion` — the repeated text simply sits still.
+ */
+interface Props {
+  text: string;
+  href?: string | undefined;
+  /** Lay the strip through the middle of the hero image, rather than below it. */
+  overlay?: boolean;
+}
+
+const { text, href: target, overlay = false } = Astro.props;
+
+/*
+ * The track holds two identical groups and slides by exactly half its width,
+ * so the moment the first group leaves the viewport the second one is sitting
+ * where it started and the loop is seamless. Six copies per group keep the
+ * strip filled on a 1800px page.
+ */
+const REPEATS = 6;
+const copies = Array.from({ length: REPEATS * 2 }, (_, index) => index);
+
+const Tag = target ? 'a' : 'div';
+const external = target ? isExternal(target) : false;
+---
+
+<Tag
+  class:list={['ticker', overlay && 'ticker--overlay']}
+  href={target ? url(target) : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+>
+  {/* The repeats are decoration; assistive technology gets the text once. */}
+  <span class="visually-hidden">{text}</span>
+
+  <div class="ticker__track" aria-hidden="true">
+    {copies.map(() => <span class="ticker__item">{text}</span>)}
+  </div>
+</Tag>
+
+<style>
+  .ticker {
+    display: block;
+    overflow: hidden;
+    padding-block: var(--s-3);
+    background: var(--c-red);
+    color: var(--c-white);
+    text-decoration: none;
+    /* The page focus ring is red; on a red strip it has to turn white. */
+    --c-focus: var(--c-white);
+  }
+
+  .ticker:focus-visible {
+    /* Pulled inwards so the figure's `overflow: hidden` cannot clip it. */
+    outline-offset: -6px;
+  }
+
+  .ticker--overlay {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 50%;
+    translate: 0 -50%;
+  }
+
+  .ticker__track {
+    display: flex;
+    width: max-content;
+    animation: ticker-slide 40s linear infinite;
+  }
+
+  a.ticker:hover .ticker__track,
+  a.ticker:focus-visible .ticker__track {
+    animation-play-state: paused;
+  }
+
+  .ticker__item {
+    flex: none;
+    padding-inline: var(--s-5);
+    border-inline-end: 1px solid currentColor;
+    font-family: var(--f-body);
+    font-size: var(--t-base);
+    font-weight: 400;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  @keyframes ticker-slide {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ticker__track {
+      animation: none;
+    }
+  }
+</style>
