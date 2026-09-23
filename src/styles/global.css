@@ -212,6 +212,33 @@ hr {
   color: var(--c-fg);
 }
 
+/*
+ * Two sections of the same colour meeting stack both their paddings, so a run
+ * of text sections is separated by twice --s-9 — on a wide screen, 224px of
+ * nothing between one paragraph and the next. Where the colour does not
+ * change there is no edge to announce, so the second section drops its top
+ * padding and the pair is separated by a single --s-9.
+ *
+ * A change of colour keeps both paddings: that space is what makes a black
+ * band read as a band rather than as a run-on.
+ */
+.section:not([data-theme]) + .section:not([data-theme]),
+.section[data-theme='black'] + .section[data-theme='black'],
+.section[data-theme='bright'] + .section[data-theme='bright'] {
+  padding-block-start: 0;
+}
+
+/*
+ * The page header is a white surface with a bottom padding of its own, so the
+ * first white section under it doubles up the same way. Trimmed so the pair
+ * adds up to the same single --s-9 as every other gap, rather than leaving
+ * the largest gap on the page directly under the title. `max()` guards the
+ * narrow screens where --s-9 falls below --s-8.
+ */
+.page-header:not([data-theme]) + .section:not([data-theme]) {
+  padding-block-start: max(0px, calc(var(--s-9) - var(--s-8)));
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
