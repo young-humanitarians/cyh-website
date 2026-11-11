@@ -174,11 +174,21 @@ const block = ({ image }: SchemaContext) =>
       }),
     }),
 
-    /** Partner logos, pulled from the `partners` collection by category. */
+    /**
+     * Partner logos, pulled from the `partners` collection by category.
+     * `variant` picks the presentation:
+     *   grid     — a logo per box, for long lists such as Summit partners
+     *   featured — one card per partner: logo, the block's heading and intro,
+     *              and a button to the partner's own website
+     *   strip    — a compact row of smaller logos, no boxes
+     * `lift` makes linked logos rise slightly on hover and focus.
+     */
     z.object({
       discriminant: z.literal('logos'),
       value: z.object({
         ...blockBase,
+        variant: z.enum(['grid', 'featured', 'strip']).default('grid'),
+        lift: z.boolean().default(false),
         category: z.enum(['founding', 'strategic', 'summit', 'general']).optional(),
         actions: z.array(action).default([]),
       }),
@@ -640,6 +650,8 @@ const settings = defineCollection({
       organigramHint: z.string(),
       mapCountries: z.string(),
       readMore: z.string(),
+      /** Partner cards: "Visit" + the partner's domain, e.g. "Visit msf.ch". */
+      visitPartner: z.string(),
     }),
   }),
 });

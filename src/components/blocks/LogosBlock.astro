@@ -4,71 +4,153 @@ import Section from '~/components/Section.astro';
 import Placeholder from '~/components/Placeholder.astro';
 import ActionRow from '~/components/ActionRow.astro';
 import { getPartners } from '~/lib/blocks';
+import { getSiteSettings } from '~/lib/site';
+import { inline } from '~/lib/inline';
 import { isExternal } from '~/lib/urls';
 import type { Block } from '~/lib/blocks';
 
 /**
- * Partner logos. Where a partner has no logo file yet the name is shown as
- * text, so the grid is complete and legible before the assets land.
+ * Partner logos, in one of three layouts (see the `logos` block in
+ * src/content.config.ts):
+ *
+ *   grid     — a box per logo. The default, and what the Summit pages use.
+ *   featured — a card per partner carrying the block's heading and intro
+ *              beside the logo, with a button to the partner's website. The
+ *              link comes from the partner entry, so it is set in one place.
+ *   strip    — a compact row of smaller, unboxed logos.
+ *
+ * Where a partner has no logo file yet the name is shown as text, so the
+ * layout is complete and legible before the assets land. Logos are always
+ * shown in their own colours — never filtered to greyscale.
+ *
+ * `variant` and `lift` are optional here because summit-[year].astro builds
+ * its block inline rather than from content.
  */
+type LogosBlock = Block<'logos'>;
+
 interface Props {
-  block: Block<'logos'>;
+  block: Omit<LogosBlock, 'variant' | 'lift'> & Partial<Pick<LogosBlock, 'variant' | 'lift'>>;
 }
 
 const { block } = Astro.props;
-const { category, actions, placeholder, ...section } = block;
+const { category, actions, placeholder, variant = 'grid', lift = false, ...section } = block;
 const partners = await getPartners(category);
+const { ui } = await getSiteSettings();
+
+/** "https://www.msf.ch/" → "msf.ch", for the card button label. */
+function domain(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
+
+const linkAttrs = (url: string) =>
+  isExternal(url) ? { target: '_blank', rel: 'noopener' } : {};
+
+const IMAGE_SIZES = {
+  grid: { widths: [160, 320], sizes: '160px' },
+  strip: { widths: [120, 240], sizes: '120px' },
+  featured: { widths: [320, 640], sizes: '(min-width: 48rem) 16rem, 60vw' },
+} as const;
+
+const { heading, intro, ...sectionRest } = section;
+const headingId = section.anchor ? `${section.anchor}-heading` : undefined;
 ---
 
-<Section {...section}>
-  {
-    partners.length > 0 ? (
-      <ul class="logos">
-        {partners.map((partner) => {
-          const inner = partner.data.logo ? (
-            <Image
-              src={partner.data.logo}
-              alt={partner.data.name}
-              widths={[160, 320]}
-              sizes="160px"
-              loading="lazy"
-            />
-          ) : (
-            <span class="logos__name">{partner.data.name}</span>
-          );
+{
+  variant === 'featured' ? (
+    /* The heading sits inside the card, beside the logo, not above it. */
+    <Section {...sectionRest}>
+      {partners.length > 0 ? (
+        <div class="featured">
+          {partners.map((partner) => (
+            <article
+              class:list={['featured__card', lift && 'featured__card--lift']}
+              aria-labelledby={headingId}
+            >
+              <div class="featured__logo">
+                {partner.data.logo ? (
+                  <Image
+                    src={partner.data.logo}
+                    alt={partner.data.name}
+                    widths={[...IMAGE_SIZES.featured.widths]}
+                    sizes={IMAGE_SIZES.featured.sizes}
+                    loading="lazy"
+                  />
+                ) : (
+                  <span class="logos__name">{partner.data.name}</span>
+                )}
+              </div>
+              <div class="featured__body stack" style="--flow: var(--s-5)">
+                <h2 id={headingId} class="title-lg">
+                  {heading ?? partner.data.name}
+                </h2>
+                {intro && <p class="featured__text" set:html={inline(intro)} />}
+                {partner.data.href && (
+                  <p class="button-row">
+                    <a class="button" href={partner.data.href} {...linkAttrs(partner.data.href)}>
+                      {ui.visitPartner} {domain(partner.data.href)}
+                    </a>
+                  </p>
+                )}
+                <ActionRow actions={actions} />
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <>
+          {heading && <h2 class="title-lg">{heading}</h2>}
+          {placeholder && <Placeholder text={placeholder} />}
+        </>
+      )}
+    </Section>
+  ) : (
+    <Section {...section}>
+      {partners.length > 0 ? (
+        <ul class:list={['logos', `logos--${variant}`, lift && 'logos--lift']}>
+          {partners.map((partner) => {
+            const inner = partner.data.logo ? (
+              <Image
+                src={partner.data.logo}
+                alt={partner.data.name}
+                widths={[...IMAGE_SIZES[variant].widths]}
+                sizes={IMAGE_SIZES[variant].sizes}
+                loading="lazy"
+              />
+            ) : (
+              <span class="logos__name">{partner.data.name}</span>
+            );
 
-          return (
-            <li class="logos__item">
-              {partner.data.href ? (
-                <a
-                  class="logos__link"
-                  href={partner.data.href}
-                  {...(isExternal(partner.data.href)
-                    ? { target: '_blank', rel: 'noopener' }
-                    : {})}
-                >
-                  {inner}
-                </a>
-              ) : (
-                inner
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    ) : (
-      placeholder && <Placeholder text={placeholder} />
-    )
-  }
-  <ActionRow actions={actions} />
-</Section>
+            return (
+              <li class="logos__item">
+                {partner.data.href ? (
+                  <a
+                    class="logos__tile logos__tile--link"
+                    href={partner.data.href}
+                    {...linkAttrs(partner.data.href)}
+                  >
+                    {inner}
+                  </a>
+                ) : (
+                  <span class="logos__tile">{inner}</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        placeholder && <Placeholder text={placeholder} />
+      )}
+      <ActionRow actions={actions} />
+    </Section>
+  )
+}
 
 <style>
   .logos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
-    gap: var(--s-5);
-    align-items: center;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -76,20 +158,16 @@ const partners = await getPartners(category);
 
   .logos__item {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 5rem;
-    padding: var(--s-4);
-    border: 1px solid var(--c-rule);
-    border-radius: var(--radius);
-    text-align: center;
   }
 
-  .logos__link {
+  .logos__tile {
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
+    text-align: center;
     text-decoration: none;
+    color: inherit;
   }
 
   .logos__name {
@@ -97,12 +175,167 @@ const partners = await getPartners(category);
   }
 
   .logos :global(img) {
-    max-height: 3.5rem;
+    display: block;
+    max-width: 100%;
     width: auto;
     object-fit: contain;
   }
 
   .logos + :global(.button-row) {
     margin-block-start: var(--s-7);
+  }
+
+  /* -- grid -- */
+
+  .logos--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr));
+    gap: var(--s-5);
+  }
+
+  .logos--grid .logos__tile {
+    min-height: 5rem;
+    padding: var(--s-4);
+    background: var(--c-bg);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+  }
+
+  .logos--grid :global(img) {
+    max-height: 3.5rem;
+  }
+
+  /*
+   * Two columns on a phone rather than one long column of logos. Tied to
+   * `lift` for now so the Summit pages keep their current layout until that
+   * is decided for them too.
+   */
+  @media (max-width: 30rem) {
+    .logos--grid.logos--lift {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--s-4);
+    }
+  }
+
+  /* -- strip -- */
+
+  .logos--strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-5) var(--s-7);
+  }
+
+  .logos--strip .logos__tile {
+    min-height: 3rem;
+  }
+
+  .logos--strip :global(img) {
+    max-height: 2.75rem;
+    max-width: 8rem;
+  }
+
+  /*
+   * -- lift --
+   * The tile rises and grows a touch on hover and keyboard focus, with a red
+   * edge on grid tiles. 0.1s ease, the live site's motion token
+   * (design-rules §10); global.css zeroes it under reduced motion.
+   */
+  .logos--lift .logos__tile {
+    position: relative;
+    transition:
+      transform 0.1s ease,
+      border-color 0.1s ease,
+      box-shadow 0.1s ease;
+  }
+
+  .logos--lift .logos__tile:hover,
+  .logos--lift .logos__tile:focus-visible {
+    z-index: 1;
+    transform: translateY(-4px) scale(1.06);
+  }
+
+  .logos--grid.logos--lift .logos__tile:hover,
+  .logos--grid.logos--lift .logos__tile:focus-visible {
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 1px var(--c-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .logos--lift .logos__tile:hover,
+    .logos--lift .logos__tile:focus-visible {
+      transform: none;
+    }
+  }
+
+  /* -- featured -- */
+
+  .featured {
+    display: grid;
+    gap: var(--s-6);
+  }
+
+  .featured__card {
+    display: grid;
+    gap: var(--s-6);
+    padding: var(--s-6);
+    border: 1px solid var(--c-rule);
+    border-radius: var(--radius);
+    background: var(--c-bg);
+  }
+
+  .featured__card--lift {
+    transition:
+      transform 0.1s ease,
+      border-color 0.1s ease,
+      box-shadow 0.1s ease;
+  }
+
+  .featured__card--lift:hover,
+  .featured__card--lift:focus-within {
+    transform: translateY(-4px);
+    border-color: var(--c-accent);
+    box-shadow: 0 0 0 1px var(--c-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .featured__card--lift:hover,
+    .featured__card--lift:focus-within {
+      transform: none;
+    }
+  }
+
+  .featured__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 8rem;
+  }
+
+  .featured__logo :global(img) {
+    display: block;
+    max-width: min(100%, 16rem);
+    max-height: 9rem;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  .featured__body {
+    max-width: var(--measure);
+  }
+
+  .featured__body > :global(.button-row) {
+    margin-block-start: var(--s-6);
+  }
+
+  /* Logo beside the text from tablet width up; stacked above it on phones. */
+  @media (min-width: 48rem) {
+    .featured__card {
+      grid-template-columns: minmax(12rem, 18rem) 1fr;
+      align-items: center;
+      gap: var(--s-8);
+      padding: var(--s-7);
+    }
   }
 </style>
