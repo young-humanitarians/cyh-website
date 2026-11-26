@@ -1,9 +1,9 @@
 # Website – Circle of Young Humanitarians
 
 Public website of the Circle of Young Humanitarians, a Swiss non-profit youth
-humanitarian organization. Static site built with Astro, deployed to GitHub
-Pages via GitHub Actions. Content is edited by non-technical volunteers
-through Keystatic.
+humanitarian organization. Static site built with Astro, deployed via GitHub
+Actions (see "Branches and deployment" below). Content is edited by
+non-technical volunteers through Keystatic.
 
 ## Architecture rules
 
@@ -34,7 +34,14 @@ through Keystatic.
   is the source of truth for the visual design.
 - The palette is exactly four colours: `#000000`, `#FFFFFF`, `#ED000C`,
   `#B10000`. No greys, no tinted surfaces, no uppercase text, no negative
-  letter-spacing, no scroll animations.
+  letter-spacing.
+- **Subtle scroll animations are welcome and encouraged** — this is a
+  deliberate departure from the static live site. Follow the motion rules in
+  section 10 of `docs/design-rules.md`: CSS scroll-driven animations only
+  (`animation-timeline: view()`, never scroll listeners), 20–40px of travel,
+  longhand properties only, guarded by `@supports` and
+  `prefers-reduced-motion: no-preference`. Nothing that flies in, bounces,
+  spins or zooms.
 - `src/styles/global.css` conforms to the spec. Section 13 of the rule book
   records what was changed to get there — do not reintroduce any of it. The
   only open item is the heading font (Inter stands in for Adobe `acumin-pro`,
@@ -66,3 +73,47 @@ through Keystatic.
   collection`, `Fix mobile navigation overlap`.
 - Work happens on feature branches and reaches `main` only via pull request.
   Never push directly to `main`.
+
+## Working with the project owner
+
+- **Design changes are reviewed visually.** After any change to styling,
+  layout or a block's appearance, tell the owner which pages to look at and
+  what to look for, and keep the dev server (`npm run dev`) running so they
+  can check it in the browser. A passing build is not sign-off on a design
+  change.
+- **The owner makes the commits.** Don't commit, merge or push on your own
+  initiative — only when explicitly asked for that specific action.
+- **Remind them to commit.** When a coherent piece of work is finished and
+  has been reviewed, or when uncommitted changes have built up across several
+  tasks, ask whether they want to commit now and suggest a commit message.
+  Don't ask after every small edit.
+
+## Branches and deployment
+
+| Branch | Deploys to | Workflow | Base path |
+| --- | --- | --- | --- |
+| `main` | GitHub Pages: https://young-humanitarians.github.io/cyh-website/ | `.github/workflows/deploy.yml` (on push, or run manually) | `/cyh-website` |
+| `dev` | Azure Static Web Apps preview: https://witty-bay-085d9b303.6.azurestaticapps.net | `.github/workflows/azure-static-web-apps-witty-bay-085d9b303.yml` (on push and on PRs into `dev`) | `/` |
+
+- `dev` is the integration and preview branch. Feature branches are merged
+  into `dev`; `dev` reaches `main` via pull request, and that publishes the
+  site.
+- Pull requests into `dev` get their own temporary Azure preview, which is
+  removed when the PR closes.
+- Every internal URL is built from `ASTRO_SITE` and `ASTRO_BASE`
+  (`astro.config.mjs`). They default to the GitHub Pages values; the Azure
+  workflow overrides them. Never hardcode the base path. Build internal
+  links with `href()` from `src/lib/urls.ts` so that they work on both hosts.
+- The Azure deployment authenticates with a GitHub Actions secret named
+  `AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_BAY_085D9B303`. It is referenced by
+  name only, and its value never belongs in any file.
+- `.github/workflows/secret-scan.yml` scans for leaked secrets and must stay
+  untouched (see Security rules).
+- The production domain https://circleofyounghumanitarians.ch/ is still the
+  old site, which is the visual reference. This repo does not deploy to it
+  yet.
+- Keystatic runs locally only (`npm run dev`, then `/keystatic`). Its routes
+  need server rendering, so the integration is loaded in dev only and the
+  production build stays fully static.
+- A dev container (`.devcontainer/`) is provided for Codespaces, and
+  `.vscode/` has launch and task configs for the Astro dev server.
