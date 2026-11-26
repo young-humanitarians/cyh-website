@@ -311,15 +311,58 @@ tweak-global-animations-enabled = false
 tweak-global-animations-type    = none
 ```
 
+The 2026 revamp departs from this. The live site is static; the revamp adds a
+layer of **subtle scroll-linked motion**, on the grounds that a page a reader
+scrolls for a minute should feel alive. This section is the deliberate
+exception to "everything comes from the live site", and it is bounded.
+
 Rules:
 
-- No scroll-triggered reveals, no fade-ins, no parallax, no marquee-style
-  attention grabbers on new work.
+- **Scroll motion is allowed where it expresses depth**, not where it
+  announces itself. Things at different distances may travel at different
+  rates; nothing may fly in, bounce, spin or zoom.
+- **Budget: 20–40px of travel.** Large enough to register, small enough not to
+  be the point. Err high rather than low: the first attempt at this used
+  8–20px and was indistinguishable from the feature being broken. Watch
+  percentage-based values — a photograph panned by `object-position` inside a
+  heavily cropped frame moves roughly 3px per percentage point, so a "small"
+  14% is 40px on the page.
+- **Build it with CSS scroll-driven animations** (`animation-timeline: view()`),
+  never a scroll listener. It runs off the main thread, so it cannot stutter,
+  and a browser without support simply shows a still page.
+- **Watch for `overflow: hidden` between the subject and the page.** It makes
+  an element its own scroll container, so a `view()` on anything inside it is
+  measured against that box rather than the page — giving an animation that
+  runs but never advances. Name the timeline on the clipping element and
+  reference it by name instead.
+- **Never write these as the `animation` shorthand.** The CSS minifier folds
+  `animation-timeline` into it, producing a value browsers reject, so the
+  effects vanish in the built site while still working in dev. Longhands only.
+- **Guard it twice**: inside `@supports (animation-timeline: view())` and
+  inside `@media (prefers-reduced-motion: no-preference)`. A reader who has
+  asked for less movement gets none of it.
+- **Finish the motion a little above the middle of the viewport.** Late enough
+  that the reader sees it happen, early enough that nothing shifts under their
+  eye while they read. Use a viewport-relative range (`cover 0% cover 45vh`),
+  never a percentage: percentages are a share of the *element's* travel, so a
+  short section finishes below the fold where nobody is looking and a tall one
+  is still arriving long after the reader has started reading it.
+- No fade-ins from zero, no marquee-style attention grabbers on new work.
 - Hover state changes on links and buttons are fine, but keep them instant or
   very short (the site's own animation duration token is `0.1s`, curve `ease`).
 - Keep the `prefers-reduced-motion` block in `global.css` regardless.
 
-**Two standing exceptions.**
+**What is in place** (all in the "scroll motion" section of `global.css`):
+
+| Effect | Travel |
+| --- | --- |
+| Hero banner lags the page as you scroll past it | 40px |
+| Gallery photographs pan within their frames, alternate ones twice as far | 16px / 32px |
+| White sections lift and fade in as they arrive | 24px, 0.25→1 |
+| Themed bands rise over the section above them | 32px |
+
+**Two further standing exceptions**, which predate the above and are about
+interaction rather than scrolling.
 
 The first is the hero ticker. The live site runs a repeating "Check our
 upcoming events!" strip under its hero, and the revamp keeps it — laid across
@@ -335,8 +378,7 @@ The second is the initiative flashcards. The 2026 revamp asks for cards that
 turn over to reveal their description. That flip runs at 350ms, longer
 than the 0.1s above. It is allowed because it is a direct interaction with a
 control the user is pointing at, not an ambient effect — and under
-`prefers-reduced-motion` the faces swap outright instead of rotating. Do not
-read this exception as licence for scroll reveals.
+`prefers-reduced-motion` the faces swap outright instead of rotating.
 
 ---
 
@@ -432,6 +474,8 @@ Before considering any styling task done:
 - [ ] No colour used other than `#000000`, `#FFFFFF`, `#ED000C`, `#B10000`
 - [ ] No `text-transform: uppercase`
 - [ ] No negative `letter-spacing`
+- [ ] Any scroll motion is inside both `@supports (animation-timeline: view())`
+      and `@media (prefers-reduced-motion: no-preference)`, and travels ≤20px
 - [ ] No grey text, grey borders or tinted backgrounds
 - [ ] Buttons are `6.4px` radius, not pills
 - [ ] Body copy is Poppins 300 / 1.8

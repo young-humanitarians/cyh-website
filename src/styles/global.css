@@ -230,13 +230,21 @@ hr {
 
 /*
  * The page header is a white surface with a bottom padding of its own, so the
- * first white section under it doubles up the same way. Trimmed so the pair
- * adds up to the same single --s-9 as every other gap, rather than leaving
- * the largest gap on the page directly under the title. `max()` guards the
- * narrow screens where --s-9 falls below --s-8.
+ * first white section under it doubles up the same way. The lead line and the
+ * first section belong together, so the pair is held to half an --s-9 — a
+ * full one left the lead stranded above a wide band of nothing. The header
+ * carries the whole gap and the section none of it.
+ *
+ * Not where a ticker strip closes the header: the strip cancels the header's
+ * bottom padding with a negative margin of --s-8, which only works while the
+ * padding stays at --s-8.
  */
-.page-header:not([data-theme]) + .section:not([data-theme]) {
-  padding-block-start: max(0px, calc(var(--s-9) - var(--s-8)));
+.page-header:not([data-theme], :has(> .ticker)):has(+ .section:not([data-theme])) {
+  padding-block-end: calc(var(--s-9) / 2);
+}
+
+.page-header:not([data-theme], :has(> .ticker)) + .section:not([data-theme]) {
+  padding-block-start: 0;
 }
 
 .visually-hidden {
@@ -580,6 +588,167 @@ hr {
 
 .card__body > * + * {
   margin-block-start: var(--s-3);
+}
+
+/* ------------------------------------------------------- scroll motion */
+
+/*
+ * Subtle scroll-linked motion: things at different depths travel at slightly
+ * different rates, so the page feels alive as you move down it. See
+ * docs/design-rules.md §10 for what is and is not allowed here.
+ *
+ * Built on CSS scroll-driven animations rather than a scroll listener, for
+ * three reasons: it runs off the main thread so it cannot stutter, it needs
+ * no JavaScript, and in a browser that does not support `animation-timeline`
+ * the @supports guard means nothing animates at all — the page is simply
+ * still, which is a perfectly good outcome.
+ *
+ * Everything here sits behind `prefers-reduced-motion: no-preference`, so a
+ * reader who has asked their system for less movement gets none of it.
+ *
+ * The animation longhands are deliberate. Written as the `animation`
+ * shorthand, the CSS minifier folds `animation-timeline` into it —
+ * `animation: linear both hero-drift view()` — which browsers do not accept,
+ * so every effect here would silently stop working in the built site while
+ * continuing to work in dev. Leave them as longhands.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* -- the hero banner lags behind the page, so it reads as further back -- */
+
+    /*
+     * The timeline is named here and referenced by the image below, rather
+     * than the image using a bare `view()`. The figure clips with
+     * `overflow: hidden`, which makes it a scroll container of its own, and a
+     * `view()` on the image would then measure the image against the figure —
+     * where it never moves — instead of against the page. The result is an
+     * animation that is running but permanently frozen mid-way.
+     */
+    .page-header__banner {
+      --hero-drift: 40px;
+      view-timeline-name: --hero-band;
+    }
+
+    /*
+     * Taller than its frame by twice the drift and offset by half of that, so
+     * that at either end of the travel it still covers the frame exactly.
+     */
+    .page-header__banner img {
+      height: calc(100% + 2 * var(--hero-drift));
+      margin-block-start: calc(var(--hero-drift) * -1);
+      animation-name: hero-drift;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --hero-band;
+    }
+
+    @keyframes hero-drift {
+      from {
+        translate: 0 calc(var(--hero-drift) * -1);
+      }
+      to {
+        translate: 0 var(--hero-drift);
+      }
+    }
+
+    /*
+     * -- gallery photographs pan within their frames, alternate ones further
+     * than their neighbours, so the row does not move as one block --
+     *
+     * Panning `object-position` rather than moving the image keeps the
+     * captions, which share the <figure>, out of the way of any clipping.
+     */
+    .gallery__figure img {
+      animation-name: gallery-pan-near;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+    }
+
+    .gallery li:nth-child(even) .gallery__figure img {
+      animation-name: gallery-pan-far;
+    }
+
+    /*
+     * Small numbers: the frames crop a 2:3 photograph to 3:2, so there is a
+     * lot of slack behind them and a percentage point of `object-position`
+     * buys roughly 3px of travel at gallery size. 3 and 6 points come out at
+     * about 8px and 16px — twice the movement on alternate photographs,
+     * still inside the budget in §10.
+     */
+    @keyframes gallery-pan-near {
+      from {
+        object-position: center 47%;
+      }
+      to {
+        object-position: center 53%;
+      }
+    }
+
+    @keyframes gallery-pan-far {
+      from {
+        object-position: center 44%;
+      }
+      to {
+        object-position: center 56%;
+      }
+    }
+
+    /* -- sections lift into place as they arrive -- */
+
+    .section:not([data-theme]) {
+      animation-name: section-rise;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      /*
+       * A viewport-relative length, not a percentage. Percentages here are a
+       * share of the element's own travel, so a tall section would still be
+       * arriving long after the reader had begun reading it, while a short
+       * one finished below the fold — which is what made the first attempt
+       * invisible. 45vh of scrolling settles every section at the same place
+       * on screen, a little above the middle, whatever its height.
+       */
+      animation-range: cover 0% cover 45vh;
+    }
+
+    @keyframes section-rise {
+      from {
+        opacity: 0.25;
+        translate: 0 24px;
+      }
+      to {
+        opacity: 1;
+        translate: 0 0;
+      }
+    }
+
+    /*
+     * -- a themed band rises over the section above it --
+     *
+     * `z-index` puts the band in front of what precedes it, and the travel
+     * ends at zero, so at rest the layout is exactly where it would be
+     * without any of this.
+     */
+    .section[data-theme] {
+      position: relative;
+      z-index: 1;
+      animation-name: band-slide;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 50vh;
+    }
+
+    @keyframes band-slide {
+      from {
+        translate: 0 32px;
+      }
+      to {
+        translate: 0 0;
+      }
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

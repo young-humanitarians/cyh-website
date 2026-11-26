@@ -65,6 +65,40 @@ const FOCUS_POSITION: Record<Focus, number> = {
   bottom: 90,
 };
 
+/*
+ * The band is a slim window on an image scaled to fill it, so the point that
+ * lands at the band's centre is not the `object-position` percentage. With
+ * `cover`, the visible centre sits at `r/2 + p(1 - r)` of the image, where r
+ * is the share of the image on show. Solving for p gives the position that
+ * puts the chosen focal point in the middle of the band.
+ *
+ * r depends on the image's own aspect ratio and on the band's size, which
+ * changes with the window — hence one value per breakpoint, computed from the
+ * real image rather than hardcoded, so portrait and landscape both work.
+ */
+const BANDS = [
+  { name: 'sm', width: 390, height: 253 },
+  { name: 'md', width: 880, height: 307 },
+  { name: 'lg', width: 1440, height: 270 },
+] as const;
+
+function objectPosition(
+  target: number,
+  band: { width: number; height: number },
+  ratio: number,
+): string {
+  const share = Math.min(0.95, band.height / (band.width * ratio));
+  const position = (target / 100 - share / 2) / (1 - share);
+  return `${(Math.min(1, Math.max(0, position)) * 100).toFixed(1)}%`;
+}
+
+const bandPositions = image
+  ? BANDS.map(
+      (band) =>
+        `--hero-${band.name}: ${objectPosition(FOCUS_POSITION[focus], band, image.height / image.width)}`,
+    ).join('; ')
+  : undefined;
+
 const tickerText = ticker?.text;
 ---
 
@@ -74,7 +108,7 @@ const tickerText = ticker?.text;
 >
   {
     image && (
-      <figure class="page-header__banner" style={`--hero-focus: ${FOCUS_POSITION[focus]}%`}>
+      <figure class="page-header__banner" style={bandPositions}>
         <Image
           src={image}
           alt={imageAlt ?? ''}
@@ -126,45 +160,37 @@ const tickerText = ticker?.text;
   .page-header__banner {
     position: relative;
     margin: 0 0 var(--s-8);
+    /* A height of its own, so the image can be taller than it and be clipped
+       when it drifts on scroll (see "scroll motion" in global.css). */
+    height: clamp(14rem, 30vh, 22rem);
     overflow: hidden;
   }
 
+  /*
+   * One position per breakpoint, worked out per image in the frontmatter
+   * above. Without this the focal point drifts: the band's height barely
+   * changes with the window while its width changes a lot, so the share of
+   * the photo on show swings from roughly 43% on a phone to 9% on a wide
+   * monitor for a portrait photo. It is what keeps the home page's ticker off
+   * the two lines of the cardboard sign at every size.
+   */
   .page-header__banner :global(img) {
     display: block;
     width: 100%;
-    height: clamp(14rem, 30vh, 22rem);
+    height: 100%;
     object-fit: cover;
-    object-position: center calc(1.762 * var(--hero-focus) - 38.1%);
+    object-position: center var(--hero-sm);
   }
 
-  /*
-   * --hero-focus says which point of the photo should sit at the middle of
-   * the band; the three expressions convert that into the `object-position`
-   * that puts it there.
-   *
-   * They differ because the band's height barely changes with the window
-   * while its width changes a lot, so the share of the photo on show swings
-   * from about 43% on a phone to 9% on a wide monitor. With `cover`, the
-   * point visible at the centre of the box is `r/2 + p(1 - r)` of the image,
-   * where r is that share and p is `object-position`. Solving for p at each
-   * breakpoint's r gives the coefficients below. Without this, a focal point
-   * chosen on a laptop would drift to a different part of the photo on a
-   * phone — which is what keeps the home page's ticker off the two lines of
-   * the cardboard sign at every size.
-   *
-   * r is derived assuming the 2:3 portrait photos the hero collection
-   * currently holds. A markedly different aspect ratio would need new
-   * coefficients.
-   */
   @media (min-width: 48rem) {
     .page-header__banner :global(img) {
-      object-position: center calc(1.362 * var(--hero-focus) - 18.1%);
+      object-position: center var(--hero-md);
     }
   }
 
   @media (min-width: 62rem) {
     .page-header__banner :global(img) {
-      object-position: center calc(1.143 * var(--hero-focus) - 7.14%);
+      object-position: center var(--hero-lg);
     }
   }
 
