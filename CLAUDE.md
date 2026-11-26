@@ -67,10 +67,34 @@ non-technical volunteers through Keystatic.
   before adding a dependency that isn't clearly necessary.
 - Accessibility matters: semantic HTML, alt texts, sufficient contrast,
   keyboard-navigable interactive elements.
+  Nothing may work on hover alone: anything revealed on hover must also work
+  on keyboard focus and on tap (see §11 of `docs/design-rules.md`).
 - Site languages: German first, English optional later. Keep all UI strings
   in a central place so translation stays feasible.
 - Commit messages: short imperative summary line, e.g. `Add events
-  collection`, `Fix mobile navigation overlap`.
+  collection`, `Fix mobile navigation overlap`. Unless the change is
+  trivial, follow the summary with a blank line and a body in plain prose
+  that explains **why**: what was wrong or missing, why this approach was
+  chosen, and anything a later reader might otherwise undo by mistake. The
+  diff already shows *what* changed, so don't just list the files.
+
+## Content rules
+
+- **Never invent content.** Don't make up facts, figures, quotes, names,
+  dates, or how an event went. If a page needs information you don't have,
+  leave it out or leave a clearly marked gap, and tell the owner what is
+  missing and who would know (e.g. "needs someone who was at the event").
+  Rewording, shortening and changing tense are fine; adding claims is not.
+- **Retiring an event once it has taken place** (`src/content/events/`):
+  1. Change `category` from `upcoming` to the archive it belongs in:
+     `enrichment` (Humanitarian Enrichment), `challenge` (Humanitarian
+     Challenge), or `other` for one-off and partner events.
+  2. Rewrite the body copy in the past tense.
+  3. Remove the `registration` link and any registration note ("Register
+     here before …").
+  4. Clear the logistics (`details: []`, no `location` or `note`), to match
+     the other past entries.
+  5. Don't add anything about how the event went (see the rule above).
 - Work happens on feature branches and reaches `main` only via pull request.
   Never push directly to `main`.
 

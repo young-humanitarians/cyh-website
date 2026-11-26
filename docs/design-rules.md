@@ -395,11 +395,15 @@ Non-negotiable, and mostly independent of the visual spec:
   navigation must open on focus, not hover alone.
 - Respect the contrast table in §2. Black on red is forbidden.
 - Skip link to `#main` stays.
-- **Glossary bubbles** (`[term](term:slug)` in content) open on hover *and* on
-  keyboard focus *and* on tap, because hover alone would put the definition
-  out of reach of keyboard and touch users. They sit flush against the word so
-  the pointer can reach them, and Escape dismisses them — hoverable,
+- **Nothing works on hover alone.** Anything that appears or changes on hover
+  (tooltips, bubbles, hover cards, flip cards, menus) must also work on
+  keyboard focus and on tap. Anything that pops up over the page must stay
+  open while the pointer moves onto it and close with Escape — hoverable,
   dismissible and persistent, per WCAG 1.4.13.
+- *Worked example:* **glossary bubbles** (`[term](term:slug)` in content) open
+  on hover, keyboard focus and tap via CSS `:focus-within`. They sit flush
+  against the word so the pointer can reach them, and the only script is
+  Escape to dismiss.
 - UI strings stay centralised in `src/content/settings/site.yaml` so the site
   can be translated (German first, per `CLAUDE.md`).
 
@@ -475,14 +479,16 @@ Before considering any styling task done:
 - [ ] No `text-transform: uppercase`
 - [ ] No negative `letter-spacing`
 - [ ] Any scroll motion is inside both `@supports (animation-timeline: view())`
-      and `@media (prefers-reduced-motion: no-preference)`, and travels ≤20px
+      and `@media (prefers-reduced-motion: no-preference)`, travels 20–40px,
+      and is written with longhand properties (§10)
 - [ ] No grey text, grey borders or tinted backgrounds
 - [ ] Buttons are `6.4px` radius, not pills
 - [ ] Body copy is Poppins 300 / 1.8
 - [ ] Headings are 500 / 1.4 / tracking 0
 - [ ] Every interactive element has a visible focus style
+- [ ] Anything revealed on hover also works on keyboard focus and on tap,
+      and pop-ups close with Escape (§11)
 - [ ] Contrast checked against §2; no black-on-red
-- [ ] No scroll-triggered animation added
 - [ ] No new hue introduced for a category — vary fill and weight instead (§2)
 - [ ] Any new block type exists in all four places: content schema, component,
       `Blocks.astro`, and `keystatic.config.ts`
