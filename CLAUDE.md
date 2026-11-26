@@ -98,6 +98,24 @@ non-technical volunteers through Keystatic.
 - Work happens on feature branches and reaches `main` only via pull request.
   Never push directly to `main`.
 
+## Source material
+
+What the site is built from, and where it lives:
+
+| Source | Where | Notes |
+| --- | --- | --- |
+| Live site, https://circleofyounghumanitarians.ch/ | Public web | Source of truth for the visual design; its values are recorded in `docs/design-rules.md`. Most page text was transcribed from it. |
+| 2026 revamp draft | **Not in the repo** | The brief for the new site: which pages exist, what each contains, and features such as flashcards, the organigram, impact stories and sourced claims. Code comments that say "the draft asks for …" refer to it. It was shared with an earlier Claude session and never saved here. |
+| `Wayfinder.docx` | **Not in the repo** | Referenced by the revamp draft as the new copy for the Humanitarian Wayfinder page, but never supplied. Until it arrives, that page carries text from the old site. |
+| PDFs (annual reports, press, ICRC magazines) | `public/downloads/` | Linked from the pages; carried over from the old site. |
+| Photos and logos | `src/assets/` | |
+
+If a task depends on the revamp draft or `Wayfinder.docx`, ask the owner for
+them; don't reconstruct their contents from memory or from code comments. If
+the owner provides them, store them in `docs/source/` and update this table.
+Leave out anything confidential or containing personal details, because this
+repo must be treated as public.
+
 ## Working with the project owner
 
 - **Design changes are reviewed visually.** After any change to styling,
