@@ -202,6 +202,22 @@ const sectionsField = fields.array(
 
       logos: fields.object({
         ...sectionBase,
+        variant: fields.select({
+          label: 'Layout',
+          description:
+            'Grid: a box per logo. Featured: one card per partner with the heading and intro above and a button to their website. Strip: a compact row of small logos.',
+          options: [
+            { label: 'Grid', value: 'grid' },
+            { label: 'Featured card', value: 'featured' },
+            { label: 'Strip', value: 'strip' },
+          ],
+          defaultValue: 'grid',
+        }),
+        lift: fields.checkbox({
+          label: 'Lift logos on hover',
+          description: 'Linked logos rise slightly when pointed at or focused.',
+          defaultValue: false,
+        }),
         category: fields.select({
           label: 'Which partners',
           options: [
@@ -955,6 +971,10 @@ export default config({
             organigramHint: fields.text({ label: 'Organigram: hint', multiline: true }),
             mapCountries: fields.text({ label: 'Map: countries label' }),
             readMore: fields.text({ label: 'Read more' }),
+            visitPartner: fields.text({
+              label: 'Partner card button',
+              description: 'Followed by the partner’s domain, e.g. “Visit” → “Visit msf.ch”.',
+            }),
           },
           {
             label: 'Interface strings',
